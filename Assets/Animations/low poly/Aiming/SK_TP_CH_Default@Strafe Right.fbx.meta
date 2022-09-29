@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 1261f6fe615305641ba135736293a0d8
+guid: a7cea486d58c4c741b332b404678cddb
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable:
@@ -51,7 +51,7 @@ ModelImporter:
       loopBlend: 0
       loopBlendOrientation: 1
       loopBlendPositionY: 1
-      loopBlendPositionXZ: 0
+      loopBlendPositionXZ: 1
       keepOriginalOrientation: 1
       keepOriginalPositionY: 1
       keepOriginalPositionXZ: 0
@@ -892,7 +892,7 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     globalScale: 1
-    rootMotionBoneName: 
+    rootMotionBoneName: Armature
     hasTranslationDoF: 0
     hasExtraRoot: 1
     skeletonHasParents: 1
