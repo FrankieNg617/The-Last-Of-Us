@@ -31,3 +31,50 @@ public class FPSCamRotationDetector : MonoBehaviour
         lastCamRotationY = cam.gameObject.transform.rotation.y;
     }
 }
+
+// public class FPSCamRotationDetector : MonoBehaviour 
+// {
+//     //Speed at which lerp should occur
+
+//     private float speed = 1f;
+//     private float rotationYDelta;
+
+//     public float turning;
+
+//     [SerializeField]
+//     private Camera cam;
+
+//     float lastCamRotationY;
+  
+//     //Lerp Direction
+//     bool LerpedUp = false;
+
+//     //Lerp time value
+//     float LerpTime;
+
+//     void Start()
+//     {
+//         lastCamRotationY = cam.gameObject.transform.rotation.y;
+//     }
+  
+//     void Update()   
+//     { 
+//         rotationYDelta = Math.Abs(cam.gameObject.transform.rotation.y - lastCamRotationY);
+
+      
+
+//         //If HoldOn Right Mousebutton,Move from 0 to 1  
+//         if(cam.gameObject.transform.rotation.y != lastCamRotationY) 
+//         {
+                     
+//             LerpTime += 0.01f*(speed+rotationYDelta);
+//         }
+//         else if(cam.gameObject.transform.rotation.y == lastCamRotationY) 
+//         {
+//             LerpTime -= 0.01f*speed;
+//         }  
+        
+//         turning = Mathf.Lerp(0 , 1, LerpTime);
+//         lastCamRotationY = cam.gameObject.transform.rotation.y; 
+//     } 
+// }
