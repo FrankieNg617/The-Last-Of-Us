@@ -20,6 +20,6 @@ public class CharacterLocomotion : MonoBehaviour
         input.y = Input.GetAxis("Vertical");
 
         animator.SetFloat("InputX", input.x);
-        animator.SetFloat("InputY", input.y);
+        animator.SetFloat("InputZ", input.y);
     }
 }
