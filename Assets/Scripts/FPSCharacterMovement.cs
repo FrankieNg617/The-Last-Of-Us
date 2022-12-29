@@ -63,7 +63,6 @@ public class FPSCharacterMovement : MonoBehaviour
     Animator animator;
 
     private CharacterController controller;
-    private bool isFPS = false;
     private Vector3 velocity;
     // Is the character on the ground.
     private bool isGrounded;
@@ -83,10 +82,6 @@ public class FPSCharacterMovement : MonoBehaviour
         isGrounded = controller.isGrounded;
 
         MoveCharacter();
-
-        if(isFPS) {
-            TurnCharacter();
-        }
 
         wasGrounded = isGrounded;
 
@@ -120,16 +115,19 @@ public class FPSCharacterMovement : MonoBehaviour
         }
 
         Vector3 applied = velocity * Time.deltaTime;
+
+        //Stick To Ground Force. Helps with making the character walk down slopes without floating.
+        // if (controller.isGrounded)
+        //     applied.y = -0.03f;
+
         controller.Move(applied);
 
-        animator.SetFloat("InputX", inputX);
-        animator.SetFloat("InputZ", inputZ);
-    }
-
-    private void TurnCharacter() {
         // Turn the character baseed on the mouse rotation.
         float yawCamera = mainCamera.transform.rotation.eulerAngles.y;
         float pitchCamera = mainCamera.transform.rotation.eulerAngles.x;
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(pitchCamera, yawCamera, 0), turnSpeed * Time.fixedDeltaTime);
+
+        animator.SetFloat("InputX", inputX);
+        animator.SetFloat("InputZ", inputZ);
     }
 }
