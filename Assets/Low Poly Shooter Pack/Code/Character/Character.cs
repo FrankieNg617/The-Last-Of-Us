@@ -1317,21 +1317,6 @@ namespace InfimaGames.LowPolyShooterPack
 			}
 		}
 		
-		public void OnLockCursor(InputAction.CallbackContext context)
-		{
-			//Switch.
-			switch (context)
-			{
-				//Performed.
-				case {phase: InputActionPhase.Performed}:
-					//Toggle the cursor locked value.
-					cursorLocked = !cursorLocked;
-					//Update the cursor's state.
-					UpdateCursorState();
-					break;
-			}
-		}
-		
 		/// <summary>
 		/// Movement.
 		/// </summary>
