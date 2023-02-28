@@ -10,10 +10,17 @@ public class Motion : MonoBehaviour
     public float sprintModifier;
     public float jumpForce;
     public Camera normalCam;
+    public Transform weaponParent;
     public Transform groundDetector;
     public LayerMask ground;
 
     private Rigidbody rig;
+
+    private Vector3 targetWeaponBobPosition;
+    private Vector3 weaponParentOrigin;
+
+    private float movementCounter;
+    private float idleCounter;
 
     private float baseFOV;
     private float sprintFOVModifier = 1.5f;
@@ -27,6 +34,7 @@ public class Motion : MonoBehaviour
         baseFOV = normalCam.fieldOfView;
         Camera.main.enabled = false;
         rig = GetComponent<Rigidbody>();
+        weaponParentOrigin = weaponParent.localPosition;
     }
     
     private void Update()
@@ -50,6 +58,26 @@ public class Motion : MonoBehaviour
         if(isJumping)
         {
             rig.AddForce(Vector3.up * jumpForce);
+        }
+
+        //HeadBob
+        if(t_hmove == 0 && t_vmove == 0)
+        {
+            HeadBob(idleCounter, 0.025f, 0.025f);
+            idleCounter += Time.deltaTime;
+            weaponParent.localPosition = Vector3.Lerp(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 2f); 
+        } 
+        else if(!isSprinting)
+        {
+            HeadBob(movementCounter, 0.035f, 0.035f);
+            movementCounter += Time.deltaTime * 3f;
+            weaponParent.localPosition = Vector3.Lerp(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 6f); 
+        }
+        else
+        {
+            HeadBob(movementCounter, 0.15f, 0.075f);
+            movementCounter += Time.deltaTime * 5f;
+            weaponParent.localPosition = Vector3.Lerp(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 10f); 
         }
     }
 
@@ -86,6 +114,15 @@ public class Motion : MonoBehaviour
         //Field of View
         if(isSprinting){ normalCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV * sprintFOVModifier, Time.deltaTime * 8f); }
         else{ normalCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV, Time.deltaTime * 8f); }
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    void HeadBob(float p_z, float p_x_intensity, float p_y_intensity)
+    {
+        targetWeaponBobPosition = weaponParentOrigin + new Vector3(Mathf.Cos(p_z) * p_x_intensity, Mathf.Sin(p_z * 2) * p_y_intensity, 0);
     }
 
     #endregion

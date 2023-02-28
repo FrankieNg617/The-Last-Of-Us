@@ -4371,6 +4371,7 @@ MonoBehaviour:
   sprintModifier: 2
   jumpForce: 1000
   normalCam: {fileID: 2120662497}
+  weaponParent: {fileID: 856569334}
   groundDetector: {fileID: 232350566}
   ground:
     serializedVersion: 2
