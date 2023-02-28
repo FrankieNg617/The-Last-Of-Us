@@ -4,21 +4,30 @@ using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
+    #region Variables
+
     public Gun[] loadout;
     public Transform weaponParent;
 
     private GameObject currentWeapon;
+
+    #endregion
+
+    #region MonoBehaviour Callbacks
 
     void Start()
     {
         
     }
 
-    
     void Update()
     {
         if(Input.GetKeyDown(KeyCode.Alpha1)) Equip(0);
     }
+
+    #endregion
+
+    #region Private Methods
 
     void Equip(int p_ind)
     {
@@ -30,4 +39,6 @@ public class Weapon : MonoBehaviour
 
         currentWeapon = t_newEquipment;
     }
+
+    #endregion
 }

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Motion : MonoBehaviour
 {
+    #region Variables
+
     public float speed;
     public float sprintModifier;
     public float jumpForce;
@@ -16,13 +18,40 @@ public class Motion : MonoBehaviour
     private float baseFOV;
     private float sprintFOVModifier = 1.5f;
 
+    #endregion
+
+    #region MonoBehaviour Callbacks
+
     private void Start()
     {
         baseFOV = normalCam.fieldOfView;
         Camera.main.enabled = false;
         rig = GetComponent<Rigidbody>();
     }
+    
+    private void Update()
+    {
+        //Axis
+        float t_hmove = Input.GetAxisRaw("Horizontal");
+        float t_vmove = Input.GetAxisRaw("Vertical");
 
+
+        //Controls
+        bool sprint = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        bool jump = Input.GetKeyDown(KeyCode.Space);
+
+
+        //States
+        bool isGrounded = Physics.Raycast(groundDetector.position, Vector3.down, 0.1f, ground);
+        bool isJumping = jump && isGrounded;
+        bool isSprinting = sprint && t_vmove > 0 && !isJumping && isGrounded;
+
+        //Jumping
+        if(isJumping)
+        {
+            rig.AddForce(Vector3.up * jumpForce);
+        }
+    }
 
     void FixedUpdate()
     {
@@ -42,12 +71,6 @@ public class Motion : MonoBehaviour
         bool isSprinting = sprint && t_vmove > 0 && !isJumping && isGrounded;
 
 
-        //Jumping
-        if(isJumping)
-        {
-            rig.AddForce(Vector3.up * jumpForce);
-        }
-
         //Movement
         Vector3 t_direction = new Vector3(t_hmove, 0, t_vmove);
         t_direction.Normalize();
@@ -64,4 +87,6 @@ public class Motion : MonoBehaviour
         if(isSprinting){ normalCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV * sprintFOVModifier, Time.deltaTime * 8f); }
         else{ normalCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV, Time.deltaTime * 8f); }
     }
+
+    #endregion
 }

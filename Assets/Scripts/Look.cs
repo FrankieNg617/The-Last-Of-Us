@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Look : MonoBehaviour
 {
+    #region Variables
+
     public static bool cursorLocked = true;
 
     public Transform player;
@@ -15,6 +17,10 @@ public class Look : MonoBehaviour
     public float maxAngle;
 
     private Quaternion camCenter;
+
+    #endregion
+
+    #region MonoBehaviour Callbacks
 
     void Start()
     {
@@ -28,6 +34,10 @@ public class Look : MonoBehaviour
 
         UpdateCursorLock();
     }
+
+    #endregion
+
+    #region Private Methods
 
     void SetY()
     {
@@ -74,4 +84,6 @@ public class Look : MonoBehaviour
             }
         }
     }
+
+    #endregion
 }
