@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
-public class Motion : MonoBehaviour
+public class Motion : MonoBehaviourPunCallbacks
 {
     #region Variables
 
@@ -39,6 +40,8 @@ public class Motion : MonoBehaviour
     
     private void Update()
     {
+        if(!photonView.IsMine) return;  
+
         //Axis
         float t_hmove = Input.GetAxisRaw("Horizontal");
         float t_vmove = Input.GetAxisRaw("Vertical");
@@ -83,6 +86,8 @@ public class Motion : MonoBehaviour
 
     void FixedUpdate()
     {
+        if(!photonView.IsMine) return;
+
         //Axis
         float t_hmove = Input.GetAxisRaw("Horizontal");
         float t_vmove = Input.GetAxisRaw("Vertical");
