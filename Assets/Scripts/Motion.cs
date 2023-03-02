@@ -34,7 +34,9 @@ public class Motion : MonoBehaviourPunCallbacks
     private void Start()
     {
         cameraParent.SetActive(photonView.IsMine);
-        
+
+        if(!photonView.IsMine) gameObject.layer = 11;
+
         baseFOV = normalCam.fieldOfView;
 
         if(Camera.main) Camera.main.enabled = false;

@@ -29,7 +29,7 @@ public class Weapon : MonoBehaviourPunCallbacks
     {
         if(!photonView.IsMine) return;
 
-        if(Input.GetKeyDown(KeyCode.Alpha1)) Equip(0);
+        if(Input.GetKeyDown(KeyCode.Alpha1)) { photonView.RPC("Equip", RpcTarget.All, 0); }
 
         if(currentWeapon != null)
         {   
@@ -39,7 +39,7 @@ public class Weapon : MonoBehaviourPunCallbacks
             //shoot
             if(Input.GetMouseButtonDown(0) && currentCooldown <= 0)
             {
-                Shoot();
+                photonView.RPC("Shoot", RpcTarget.All);
             }
 
             //weapon position elasticity
@@ -54,6 +54,7 @@ public class Weapon : MonoBehaviourPunCallbacks
 
     #region Private Methods
 
+    [PunRPC]
     void Equip(int p_ind)
     {
         if(currentWeapon != null) Destroy(currentWeapon);
@@ -86,9 +87,10 @@ public class Weapon : MonoBehaviourPunCallbacks
         }
     }
 
+    [PunRPC]
     void Shoot()
     {
-        Transform t_spawn = transform.Find("Cameras/Normal Camera");   //bullet spawn point: player's camera 
+        Transform t_spawn = transform.Find("Cameras/Normal Camera");   //bullet spawn point: player's camera
 
         //bloom
         Vector3 t_bloom = t_spawn.position + t_spawn.forward * 1000f;
@@ -97,21 +99,30 @@ public class Weapon : MonoBehaviourPunCallbacks
         t_bloom -= t_spawn.position;
         t_bloom.Normalize();
 
+        //cooldown
+        currentCooldown = loadout[currentIndex].fireRate;
+        
         //raycast
         RaycastHit t_hit = new RaycastHit();    
         if (Physics.Raycast(t_spawn.position, t_bloom, out t_hit, 1000f, canBeShot)) 
         {
             GameObject t_newHole = Instantiate(bulletHolePrefab, t_hit.point + t_hit.normal * 0.001f, Quaternion.identity) as GameObject;
             t_newHole.transform.LookAt(t_hit.point + t_hit.normal);
-            Destroy(t_newHole, 5f);  
+            Destroy(t_newHole, 5f);     
+
+            if(photonView.IsMine)
+            {
+                //shooting other player on network
+                if(t_hit.collider.gameObject.layer == 11)
+                {
+                    //RPC call to damage player goes here
+                }
+            }    
         }
 
         //gun fx
         currentWeapon.transform.Rotate(-loadout[currentIndex].recoil, 0, 0);
-        currentWeapon.transform.position -= currentWeapon.transform.forward * loadout[currentIndex].kickBack;
-
-        //cooldown
-        currentCooldown = loadout[currentIndex].fireRate;
+        currentWeapon.transform.position -= currentWeapon.transform.forward * loadout[currentIndex].kickBack; 
     }
 
     #endregion
