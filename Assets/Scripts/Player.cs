@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class Motion : MonoBehaviourPunCallbacks
+public class Player : MonoBehaviourPunCallbacks
 {
     #region Variables
 
@@ -16,6 +16,8 @@ public class Motion : MonoBehaviourPunCallbacks
     public Transform weaponParent;
     public Transform groundDetector;
     public LayerMask ground;
+
+    private Transform ui_healthbar;
 
     private Rigidbody rig;
 
@@ -51,6 +53,13 @@ public class Motion : MonoBehaviourPunCallbacks
         
         rig = GetComponent<Rigidbody>();
         weaponParentOrigin = weaponParent.localPosition;
+
+        if(photonView.IsMine)
+        {
+            ui_healthbar =  GameObject.Find("HUD/Health/Bar").transform;
+            RefreshHealthBar();
+        }
+        
     }
     
     private void Update()
@@ -78,6 +87,8 @@ public class Motion : MonoBehaviourPunCallbacks
             rig.AddForce(Vector3.up * jumpForce);
         }
 
+        if(Input.GetKeyDown(KeyCode.U)) TakeDamage(100);
+
         //HeadBob
         if(t_hmove == 0 && t_vmove == 0)
         {
@@ -97,6 +108,9 @@ public class Motion : MonoBehaviourPunCallbacks
             movementCounter += Time.deltaTime * 5f;
             weaponParent.localPosition = Vector3.Lerp(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 10f); 
         }
+
+        //UI Refreshes
+        RefreshHealthBar();
     }
 
     void FixedUpdate()
@@ -145,6 +159,12 @@ public class Motion : MonoBehaviourPunCallbacks
         targetWeaponBobPosition = weaponParentOrigin + new Vector3(Mathf.Cos(p_z) * p_x_intensity, Mathf.Sin(p_z * 2) * p_y_intensity, 0);
     }
 
+    void RefreshHealthBar()
+    {
+        float t_health_ratio = (float)current_health / (float)max_health;
+        ui_healthbar.localScale = Vector3.Lerp(ui_healthbar.localScale, new Vector3(t_health_ratio, 1, 1), Time.deltaTime * 8f);
+    }
+
     #endregion
 
     #region Public Methods
@@ -154,7 +174,7 @@ public class Motion : MonoBehaviourPunCallbacks
         if(photonView.IsMine)
         {
             current_health -= p_damage;
-            Debug.Log(current_health);
+            RefreshHealthBar();
 
             if(current_health <= 0)
             {
