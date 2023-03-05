@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 using UnityEngine;
 using Photon.Pun;
 
@@ -16,13 +17,16 @@ public class Weapon : MonoBehaviourPunCallbacks
     private int currentIndex;  //the index of current weapon
     private GameObject currentWeapon;
 
+    private bool isReloading;
+
     #endregion
 
     #region MonoBehaviour Callbacks
 
     void Start()
     {
-        
+        foreach(Gun a in loadout) a.Initialize();
+        Equip(0);
     }
 
     void Update()
@@ -37,9 +41,13 @@ public class Weapon : MonoBehaviourPunCallbacks
 
                 //shoot
                 if(Input.GetMouseButtonDown(0) && currentCooldown <= 0)
-                {
-                    photonView.RPC("Shoot", RpcTarget.All);
+                {   
+                    if(loadout[currentIndex].FireBullet()) photonView.RPC("Shoot", RpcTarget.All);
+                    else StartCoroutine(Reload(loadout[currentIndex].reloadTime));
                 }
+
+                //reload
+                if(Input.GetKeyDown(KeyCode.R)) StartCoroutine(Reload(loadout[currentIndex].reloadTime));
 
                 //cooldown
                 if(currentCooldown > 0) currentCooldown -= Time.deltaTime;
@@ -54,10 +62,26 @@ public class Weapon : MonoBehaviourPunCallbacks
 
     #region Private Methods
 
+    IEnumerator Reload(float p_wait)
+    {
+        isReloading = true;
+        currentWeapon.SetActive(false);
+
+        yield return new WaitForSeconds(p_wait);
+
+        loadout[currentIndex].Reload();
+        currentWeapon.SetActive(true);
+        isReloading = false;
+    }
+
     [PunRPC]
     void Equip(int p_ind)
     {
-        if(currentWeapon != null) Destroy(currentWeapon);
+        if(currentWeapon != null) 
+        {
+            if(isReloading) StopCoroutine("Reload");
+            Destroy(currentWeapon);
+        }
 
         currentIndex = p_ind;
 
@@ -130,6 +154,18 @@ public class Weapon : MonoBehaviourPunCallbacks
     void TakeDamage(int p_damage)
     {
         GetComponent<Player>().TakeDamage(p_damage);
+    }
+
+    #endregion
+
+    #region Public Methods
+
+    public void RefreshAmmo(Text p_text)
+    {
+        int t_clip = loadout[currentIndex].GetClip();
+        int t_stash = loadout[currentIndex].GetStash();
+
+        p_text.text = t_clip.ToString("D2") + " / " + t_stash.ToString("D2");
     }
 
     #endregion

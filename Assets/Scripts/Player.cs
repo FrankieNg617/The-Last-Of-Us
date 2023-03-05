@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 using UnityEngine;
 using Photon.Pun;
 
@@ -18,6 +19,7 @@ public class Player : MonoBehaviourPunCallbacks
     public LayerMask ground;
 
     private Transform ui_healthbar;
+    private Text ui_ammo;
 
     private Rigidbody rig;
 
@@ -33,6 +35,7 @@ public class Player : MonoBehaviourPunCallbacks
     private int current_health;
 
     private Manager manager;
+    private Weapon weapon;
 
     #endregion
 
@@ -41,6 +44,8 @@ public class Player : MonoBehaviourPunCallbacks
     private void Start()
     {
         manager = GameObject.Find("Manager").GetComponent<Manager>();
+        weapon = GetComponent<Weapon>();
+        
         current_health = max_health;
 
         cameraParent.SetActive(photonView.IsMine);
@@ -57,6 +62,7 @@ public class Player : MonoBehaviourPunCallbacks
         if(photonView.IsMine)
         {
             ui_healthbar =  GameObject.Find("HUD/Health/Bar").transform;
+            ui_ammo =  GameObject.Find("HUD/Ammo/Text").GetComponent<Text>();
             RefreshHealthBar();
         }
         
@@ -111,6 +117,7 @@ public class Player : MonoBehaviourPunCallbacks
 
         //UI Refreshes
         RefreshHealthBar();
+        weapon.RefreshAmmo(ui_ammo);
     }
 
     void FixedUpdate()
