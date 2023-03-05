@@ -139,6 +139,8 @@ MonoBehaviour:
   speed: 500
   sprintModifier: 2
   jumpForce: 1000
+  lengthOfSlide: 1
+  slideModifier: 2.5
   max_health: 1000
   normalCam: {fileID: 3154256829337983549}
   cameraParent: {fileID: 3154256828872899520}
@@ -483,7 +485,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3154256829601371050
 Transform:
   m_ObjectHideFlags: 0
