@@ -12,6 +12,7 @@ public class Weapon : MonoBehaviourPunCallbacks
     public Transform weaponParent;
     public GameObject bulletHolePrefab;
     public LayerMask canBeShot;
+    public bool isAiming = false;
 
     private float currentCooldown;
     private int currentIndex;  //the index of current weapon
@@ -25,34 +26,47 @@ public class Weapon : MonoBehaviourPunCallbacks
 
     void Start()
     {
-        foreach(Gun a in loadout) a.Initialize();
+        foreach (Gun a in loadout) a.Initialize();
         Equip(0);
     }
 
     void Update()
     {
-        if(photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha1)) { photonView.RPC("Equip", RpcTarget.All, 0); }
+        if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha1)) { photonView.RPC("Equip", RpcTarget.All, 0); }
+        if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha2)) { photonView.RPC("Equip", RpcTarget.All, 1); }
 
-        if(currentWeapon != null)
-        {   
-            if(photonView.IsMine){
+        if (currentWeapon != null)
+        {
+            if (photonView.IsMine)
+            {
                 //aim
                 Aim(Input.GetMouseButton(1));
 
                 //shoot
-                if(Input.GetMouseButtonDown(0) && currentCooldown <= 0)
-                {   
-                    if(loadout[currentIndex].FireBullet()) photonView.RPC("Shoot", RpcTarget.All);
-                    else StartCoroutine(Reload(loadout[currentIndex].reloadTime));
+                if (loadout[currentIndex].burst != 1)
+                {
+                    if (Input.GetMouseButtonDown(0) && currentCooldown <= 0)
+                    {
+                        if (loadout[currentIndex].FireBullet()) photonView.RPC("Shoot", RpcTarget.All);
+                        else StartCoroutine(Reload(loadout[currentIndex].reloadTime));
+                    }
+                }
+                else
+                {
+                    if (Input.GetMouseButton(0) && currentCooldown <= 0)
+                    {
+                        if (loadout[currentIndex].FireBullet()) photonView.RPC("Shoot", RpcTarget.All);
+                        else StartCoroutine(Reload(loadout[currentIndex].reloadTime));
+                    }
                 }
 
                 //reload
-                if(Input.GetKeyDown(KeyCode.R)) StartCoroutine(Reload(loadout[currentIndex].reloadTime));
+                if (Input.GetKeyDown(KeyCode.R)) StartCoroutine(Reload(loadout[currentIndex].reloadTime));
 
                 //cooldown
-                if(currentCooldown > 0) currentCooldown -= Time.deltaTime;
+                if (currentCooldown > 0) currentCooldown -= Time.deltaTime;
             }
-            
+
             //weapon position elasticity
             currentWeapon.transform.localPosition = Vector3.Lerp(currentWeapon.transform.localPosition, Vector3.zero, Time.deltaTime * 4f);
         }
@@ -77,9 +91,9 @@ public class Weapon : MonoBehaviourPunCallbacks
     [PunRPC]
     void Equip(int p_ind)
     {
-        if(currentWeapon != null) 
+        if (currentWeapon != null)
         {
-            if(isReloading) StopCoroutine("Reload");
+            if (isReloading) StopCoroutine("Reload");
             Destroy(currentWeapon);
         }
 
@@ -95,11 +109,12 @@ public class Weapon : MonoBehaviourPunCallbacks
 
     void Aim(bool p_isAiming)
     {
+        isAiming = p_isAiming;
         Transform t_anchor = currentWeapon.transform.Find("Anchor");
         Transform t_state_ads = currentWeapon.transform.Find("States/ADS");
         Transform t_state_hip = currentWeapon.transform.Find("States/Hip");
 
-        if(p_isAiming)
+        if (p_isAiming)
         {
             //aim
             t_anchor.position = Vector3.Lerp(t_anchor.position, t_state_ads.position, Time.deltaTime * loadout[currentIndex].aimSpeed);
@@ -125,29 +140,29 @@ public class Weapon : MonoBehaviourPunCallbacks
 
         //cooldown
         currentCooldown = loadout[currentIndex].fireRate;
-        
+
         //raycast
-        RaycastHit t_hit = new RaycastHit();    
-        if (Physics.Raycast(t_spawn.position, t_bloom, out t_hit, 1000f, canBeShot)) 
+        RaycastHit t_hit = new RaycastHit();
+        if (Physics.Raycast(t_spawn.position, t_bloom, out t_hit, 1000f, canBeShot))
         {
             GameObject t_newHole = Instantiate(bulletHolePrefab, t_hit.point + t_hit.normal * 0.001f, Quaternion.identity) as GameObject;
             t_newHole.transform.LookAt(t_hit.point + t_hit.normal);
-            Destroy(t_newHole, 5f);     
+            Destroy(t_newHole, 5f);
 
-            if(photonView.IsMine)
+            if (photonView.IsMine)
             {
                 //shooting other player on network
-                if(t_hit.collider.gameObject.layer == 11)
+                if (t_hit.collider.gameObject.layer == 11)
                 {
                     t_hit.collider.gameObject.GetPhotonView().RPC("TakeDamage", RpcTarget.All, loadout[currentIndex].damage);
 
                 }
-            }    
+            }
         }
 
         //gun fx
         currentWeapon.transform.Rotate(-loadout[currentIndex].recoil, 0, 0);
-        currentWeapon.transform.position -= currentWeapon.transform.forward * loadout[currentIndex].kickBack; 
+        currentWeapon.transform.position -= currentWeapon.transform.forward * loadout[currentIndex].kickBack;
     }
 
     [PunRPC]

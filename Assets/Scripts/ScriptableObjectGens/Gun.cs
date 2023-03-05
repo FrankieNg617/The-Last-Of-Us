@@ -8,6 +8,7 @@ public class Gun : ScriptableObject
     public string name;
     public int damage;
     public int ammo;
+    public int burst; //0 semi | 1 auto | 2+ burst fire
     public int clipsize;
     public float fireRate;
     public float bloom;
