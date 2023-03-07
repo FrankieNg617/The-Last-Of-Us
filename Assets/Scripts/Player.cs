@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using UnityEngine;
 using Photon.Pun;
 
-public class Player : MonoBehaviourPunCallbacks
+public class Player : MonoBehaviourPunCallbacks, IPunObservable
 {
     #region Variables
 
@@ -53,6 +53,24 @@ public class Player : MonoBehaviourPunCallbacks
     private float slide_time;
     private Vector3 slide_dir;
 
+    private float aimAngle;
+
+    #endregion
+
+    #region Photon Callbacks
+
+        public void OnPhotonSerializeView(PhotonStream p_stream, PhotonMessageInfo p_message)
+        {
+            if (p_stream.IsWriting)
+            {
+                p_stream.SendNext((int)(weaponParent.transform.localEulerAngles.x * 100f));
+            }
+            else
+            {
+                aimAngle = (int)p_stream.ReceiveNext() / 100f;
+            }
+        }
+
     #endregion
 
     #region MonoBehaviour Callbacks
@@ -66,7 +84,12 @@ public class Player : MonoBehaviourPunCallbacks
 
         cameraParent.SetActive(photonView.IsMine);
 
-        if (!photonView.IsMine) gameObject.layer = 11;
+        if (!photonView.IsMine)
+        {
+            gameObject.layer = 11;
+            standingCollider.layer = 11;
+            crouchingCollider.layer = 11;
+        }
 
         baseFOV = normalCam.fieldOfView;
         origin = normalCam.transform.localPosition;
@@ -89,7 +112,11 @@ public class Player : MonoBehaviourPunCallbacks
 
     private void Update()
     {
-        if (!photonView.IsMine) return;
+        if (!photonView.IsMine)
+        {
+            RefreshMultiplayerState();
+            return;
+        } 
 
         //Axis
         float t_hmove = Input.GetAxisRaw("Horizontal");
@@ -256,6 +283,19 @@ public class Player : MonoBehaviourPunCallbacks
     #endregion
 
     #region Private Methods
+
+    void RefreshMultiplayerState()
+    {
+        float cacheEulY = weaponParent.localEulerAngles.y;
+
+        Quaternion targetRotation = Quaternion.identity * Quaternion.AngleAxis(aimAngle, Vector3.right);
+        weaponParent.rotation = Quaternion.Slerp(weaponParent.rotation, targetRotation, Time.deltaTime * 8f);
+
+        Vector3 finalRotation = weaponParent.localEulerAngles;
+        finalRotation.y = cacheEulY;
+
+        weaponParent.localEulerAngles = finalRotation;
+    }
 
     void HeadBob(float p_z, float p_x_intensity, float p_y_intensity)
     {

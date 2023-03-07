@@ -85,8 +85,8 @@ MonoBehaviour:
     m_Bits: 256
   slideAmount: 0.75
   crouchAmount: 0.5
-  standingCollider: {fileID: 0}
-  crouchingCollider: {fileID: 0}
+  standingCollider: {fileID: 3892234248321482715}
+  crouchingCollider: {fileID: 7034579138895964802}
 --- !u!114 &3154256828308551014
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -143,9 +143,10 @@ MonoBehaviour:
   prefixField: -1
   Synchronization: 2
   OwnershipTransfer: 0
-  observableSearch: 2
+  observableSearch: 0
   ObservedComponents:
   - {fileID: 4771682388271970075}
+  - {fileID: 3154256828308551012}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
