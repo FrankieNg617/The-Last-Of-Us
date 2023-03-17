@@ -20,7 +20,7 @@ MonoBehaviour:
   fireRate: 0.15
   bloom: 1
   recoil: 7
-  kickBack: 0.15
+  kickBack: 0.02
   aimSpeed: 7
   reloadTime: 1.5
   prefab: {fileID: 7084037848292785719, guid: 4417cadc70741b840933b4a7fbcd7977, type: 3}

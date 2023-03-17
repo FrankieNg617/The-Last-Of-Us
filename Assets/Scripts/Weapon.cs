@@ -56,12 +56,12 @@ public class Weapon : MonoBehaviourPunCallbacks
                     if (Input.GetMouseButton(0) && currentCooldown <= 0)
                     {
                         if (loadout[currentIndex].FireBullet()) photonView.RPC("Shoot", RpcTarget.All);
-                        else StartCoroutine(Reload(loadout[currentIndex].reloadTime));
+                        else photonView.RPC("ReloadRPC", RpcTarget.All);
                     }
                 }
 
                 //reload
-                if (Input.GetKeyDown(KeyCode.R)) StartCoroutine(Reload(loadout[currentIndex].reloadTime));
+                if (Input.GetKeyDown(KeyCode.R)) photonView.RPC("ReloadRPC", RpcTarget.All);
 
                 //cooldown
                 if (currentCooldown > 0) currentCooldown -= Time.deltaTime;
@@ -76,10 +76,20 @@ public class Weapon : MonoBehaviourPunCallbacks
 
     #region Private Methods
 
+    [PunRPC]
+    private void ReloadRPC()
+    {
+        StartCoroutine(Reload(loadout[currentIndex].reloadTime));
+    }
+
     IEnumerator Reload(float p_wait)
     {
         isReloading = true;
-        currentWeapon.SetActive(false);
+
+        if (currentWeapon.GetComponent<Animator>())
+            currentWeapon.GetComponent<Animator>().Play("Reload", 0 ,0);
+        else
+            currentWeapon.SetActive(false);
 
         yield return new WaitForSeconds(p_wait);
 
