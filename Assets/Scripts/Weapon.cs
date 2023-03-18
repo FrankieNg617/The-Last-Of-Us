@@ -114,6 +114,8 @@ public class Weapon : MonoBehaviourPunCallbacks
         t_newWeapon.transform.localEulerAngles = Vector3.zero;
         t_newWeapon.GetComponent<Swap>().isMine = photonView.IsMine;
 
+        t_newWeapon.GetComponent<Animator>().Play("Equip", 0, 0);
+
         currentWeapon = t_newWeapon;
     }
 
