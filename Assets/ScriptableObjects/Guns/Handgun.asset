@@ -23,4 +23,4 @@ MonoBehaviour:
   kickBack: 0.02
   aimSpeed: 7
   reloadTime: 1.5
-  prefab: {fileID: 7084037848292785719, guid: 4417cadc70741b840933b4a7fbcd7977, type: 3}
+  prefab: {fileID: 7084037848292785719, guid: 8d98b3da0d47df847a65f4c3833ef221, type: 3}
