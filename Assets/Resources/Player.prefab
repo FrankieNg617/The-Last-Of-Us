@@ -95,6 +95,90 @@ Transform:
   m_Father: {fileID: 3012176536583096823}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2854216522209333287
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6793440274723446432}
+  - component: {fileID: 1140944544935189873}
+  - component: {fileID: 2469996155196044956}
+  m_Layer: 9
+  m_Name: 'Weapon Camera '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6793440274723446432
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2854216522209333287}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.635, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3154256828872899521}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!20 &1140944544935189873
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2854216522209333287}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 3
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_FocalLength: 50
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: -2
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!81 &2469996155196044956
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2854216522209333287}
+  m_Enabled: 1
 --- !u!1 &3154256828308551022
 GameObject:
   m_ObjectHideFlags: 0
@@ -172,6 +256,7 @@ MonoBehaviour:
   lengthOfSlide: 0.75
   max_health: 1000
   normalCam: {fileID: 3154256829337983549}
+  weaponCam: {fileID: 1140944544935189873}
   cameraParent: {fileID: 3154256828872899520}
   weaponParent: {fileID: 3154256828454588970}
   groundDetector: {fileID: 3154256828493563066}
@@ -195,7 +280,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 3154256828308551018}
-  cams: {fileID: 3154256829337983491}
+  normalCam: {fileID: 3154256829337983491}
+  weaponCam: {fileID: 6793440274723446432}
   weapon: {fileID: 3154256828454588970}
   xSensitivity: 70
   ySensitivity: 70
@@ -215,6 +301,7 @@ MonoBehaviour:
   loadout:
   - {fileID: 11400000, guid: b9c729305f01b91449853a98d624cea5, type: 2}
   - {fileID: 11400000, guid: 68ff340a3f73cd347b7d5fc67b2b4a9f, type: 2}
+  currentGunData: {fileID: 0}
   weaponParent: {fileID: 3154256828454588970}
   bulletHolePrefab: {fileID: 5031034841414229636, guid: f7c6dc70310deac45a61c6e85d1cf00e, type: 3}
   canBeShot:
@@ -370,7 +457,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &3154256828872899521
 Transform:
   m_ObjectHideFlags: 0
@@ -384,6 +471,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3154256829337983491}
+  - {fileID: 6793440274723446432}
   m_Father: {fileID: 3154256828308551018}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -485,7 +573,7 @@ Camera:
   m_Depth: -2
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 2871
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0

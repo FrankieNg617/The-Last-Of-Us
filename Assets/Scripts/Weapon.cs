@@ -9,6 +9,8 @@ public class Weapon : MonoBehaviourPunCallbacks
     #region Variables
 
     public Gun[] loadout;
+    [HideInInspector] public Gun currentGunData;
+
     public Transform weaponParent;
     public GameObject bulletHolePrefab;
     public LayerMask canBeShot;
@@ -41,9 +43,6 @@ public class Weapon : MonoBehaviourPunCallbacks
         {
             if (photonView.IsMine)
             {
-                //aim
-                Aim(Input.GetMouseButton(1));
-
                 //shoot
                 if (loadout[currentIndex].burst != 1)
                 {
@@ -105,7 +104,7 @@ public class Weapon : MonoBehaviourPunCallbacks
     {
         if (currentWeapon != null)
         {
-            if (isReloading) StopCoroutine("Reload");
+            if(isReloading) StopCoroutine("Reload");
             Destroy(currentWeapon);
         }
 
@@ -114,15 +113,27 @@ public class Weapon : MonoBehaviourPunCallbacks
         GameObject t_newWeapon = Instantiate(loadout[p_ind].prefab, weaponParent.position, weaponParent.rotation, weaponParent) as GameObject;
         t_newWeapon.transform.localPosition = Vector3.zero;
         t_newWeapon.transform.localEulerAngles = Vector3.zero;
-        t_newWeapon.GetComponent<Swap>().isMine = photonView.IsMine;
+        t_newWeapon.GetComponent<Sway>().isMine = photonView.IsMine;
+
+        if (photonView.IsMine) ChangeLayersRecursively(t_newWeapon, 10);
+        else ChangeLayersRecursively(t_newWeapon, 0);
 
         t_newWeapon.GetComponent<Animator>().Play("Equip", 0, 0);
 
         currentWeapon = t_newWeapon;
+        currentGunData = loadout[p_ind];
     }
 
-    void Aim(bool p_isAiming)
+    private void ChangeLayersRecursively (GameObject p_target, int p_layer)
     {
+        p_target.layer = p_layer;
+        foreach (Transform a in p_target.transform) ChangeLayersRecursively(a.gameObject, p_layer);
+    }
+
+    public void Aim(bool p_isAiming)
+    {
+        if (!currentWeapon) return;
+
         isAiming = p_isAiming;
         Transform t_anchor = currentWeapon.transform.Find("Root");
         Transform t_state_ads = currentWeapon.transform.Find("States/ADS");

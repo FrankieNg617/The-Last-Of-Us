@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class Swap : MonoBehaviour
+public class Sway : MonoBehaviour
 {
     #region Variables
 

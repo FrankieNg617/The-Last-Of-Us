@@ -10,7 +10,8 @@ public class Look : MonoBehaviourPunCallbacks
     public static bool cursorLocked = true;
 
     public Transform player;
-    public Transform cams;
+    public Transform normalCam;
+    public Transform weaponCam;
     public Transform weapon;
 
     public float xSensitivity;
@@ -25,7 +26,7 @@ public class Look : MonoBehaviourPunCallbacks
 
     void Start()
     {
-        camCenter = cams.localRotation;  //set rotation origin for camera to camCenter
+        camCenter = normalCam.localRotation;  //set rotation origin for camera to camCenter
     }
 
     void Update()
@@ -37,6 +38,8 @@ public class Look : MonoBehaviourPunCallbacks
         SetX();
 
         UpdateCursorLock();
+
+        weaponCam.rotation = normalCam.rotation;
     }
 
     #endregion
@@ -47,14 +50,14 @@ public class Look : MonoBehaviourPunCallbacks
     {
         float t_input = Input.GetAxis("Mouse Y") * ySensitivity * Time.fixedDeltaTime;
         Quaternion t_adj = Quaternion.AngleAxis(t_input, -Vector3.right);
-        Quaternion t_delta = cams.localRotation * t_adj;
+        Quaternion t_delta = normalCam.localRotation * t_adj;
 
         if(Quaternion.Angle(camCenter, t_delta) < maxAngle)
         {
-            cams.localRotation = t_delta;
+            normalCam.localRotation = t_delta;
         }
 
-        weapon.rotation = cams.rotation; //rotate the weapon with the camera
+        weapon.rotation = normalCam.rotation; //rotate the weapon with the camera
     }
 
     void SetX()

@@ -16,6 +16,8 @@ public class Gun : ScriptableObject
     public float kickBack;
     public float aimSpeed;
     public float reloadTime;
+    [Range(0, 1)] public float mainFOV;
+    [Range(0, 1)] public float weaponFOV;
     public GameObject prefab;
 
     private int stash; //current ammo

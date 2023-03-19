@@ -16,6 +16,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     public float lengthOfSlide;
     public int max_health;
     public Camera normalCam;
+    public Camera weaponCam;
     public GameObject cameraParent;
     public Transform weaponParent;
     public Transform groundDetector;
@@ -54,6 +55,8 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     private bool sliding;
     private float slide_time;
     private Vector3 slide_dir;
+
+    private bool isAiming;
 
     private float aimAngle;
 
@@ -235,6 +238,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         bool sprint = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         bool jump = Input.GetKeyDown(KeyCode.Space);
         bool slide = Input.GetKey(KeyCode.LeftControl);
+        bool aim = Input.GetMouseButton(1);
 
 
         //States
@@ -242,6 +246,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         bool isJumping = jump && isGrounded;
         bool isSprinting = sprint && t_vmove > 0 && !isJumping && isGrounded;
         bool isSliding = isSprinting && slide && !sliding;
+        isAiming = aim && !isSliding && !isSprinting;
 
 
         //Pause
@@ -255,6 +260,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             isJumping = false;
             isSprinting = false;
             isSliding = false;
+            isAiming = false;
         }
 
 
@@ -306,19 +312,47 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         }
 
 
+        //Aiming
+        weapon.Aim(isAiming);
+
+
         //Camera Stuff
         if (sliding)
         {
             normalCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV * sprintFOVModifier * 1.15f, Time.deltaTime * 8f);
-            normalCam.transform.localPosition = Vector3.Lerp(normalCam.transform.localPosition, origin + Vector3.down * slideAmount, Time.deltaTime * 6f);
+            weaponCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV * sprintFOVModifier * 1.15f, Time.deltaTime * 8f);
+
+            normalCam.transform.localPosition = Vector3.Lerp(normalCam.transform.localPosition, origin + Vector3.down * slideAmount, Time.deltaTime*6f);
+            weaponCam.transform.localPosition = Vector3.Lerp(weaponCam.transform.localPosition, origin + Vector3.down * slideAmount, Time.deltaTime*6f);
         }
         else
         {
-            if (isSprinting) normalCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV * sprintFOVModifier, Time.deltaTime * 8f);
-            else normalCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV, Time.deltaTime * 8f); 
+            if (isSprinting)
+            {
+                normalCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV * sprintFOVModifier, Time.deltaTime * 8f);
+                weaponCam.fieldOfView = Mathf.Lerp(weaponCam.fieldOfView, baseFOV * sprintFOVModifier, Time.deltaTime * 8f);
+            }
+            else if (isAiming)
+            {
+                normalCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV * weapon.currentGunData.mainFOV, Time.deltaTime * 8f);
+                weaponCam.fieldOfView = Mathf.Lerp(weaponCam.fieldOfView, baseFOV * weapon.currentGunData.weaponFOV, Time.deltaTime * 8f);
+            }
+            else
+            {
+                normalCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV, Time.deltaTime * 8f);
+                weaponCam.fieldOfView = Mathf.Lerp(weaponCam.fieldOfView, baseFOV, Time.deltaTime * 8f);
+            }
 
-            if (crouched) normalCam.transform.localPosition = Vector3.Lerp(normalCam.transform.localPosition, origin + Vector3.down * crouchAmount, Time.deltaTime * 6f);
-            else normalCam.transform.localPosition = Vector3.Lerp(normalCam.transform.localPosition, origin, Time.deltaTime * 6f);
+            if (crouched)
+            {
+                normalCam.transform.localPosition = Vector3.Lerp(normalCam.transform.localPosition, origin + Vector3.down * crouchAmount, Time.deltaTime*6f);
+                weaponCam.transform.localPosition = Vector3.Lerp(weaponCam.transform.localPosition, origin + Vector3.down * crouchAmount, Time.deltaTime*6f);
+            }
+            else
+            {
+                normalCam.transform.localPosition = Vector3.Lerp(normalCam.transform.localPosition, origin, Time.deltaTime*6f);
+                weaponCam.transform.localPosition = Vector3.Lerp(weaponCam.transform.localPosition, origin, Time.deltaTime*6f);
+            }
         }
 
     }
@@ -343,7 +377,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     void HeadBob(float p_z, float p_x_intensity, float p_y_intensity)
     {
         float t_aim_adjust = 1f;
-        if(weapon.isAiming) t_aim_adjust = 0.1f;
+        if(isAiming) t_aim_adjust = 0.1f;
         targetWeaponBobPosition = weaponParentCurrentPos + new Vector3(Mathf.Cos(p_z) * p_x_intensity * t_aim_adjust, Mathf.Sin(p_z * 2) * p_y_intensity * t_aim_adjust, 0);
     }
 

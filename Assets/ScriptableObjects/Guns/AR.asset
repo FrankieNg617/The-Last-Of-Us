@@ -23,4 +23,6 @@ MonoBehaviour:
   kickBack: 0.05
   aimSpeed: 7
   reloadTime: 2
+  mainFOV: 0.8
+  weaponFOV: 0.2
   prefab: {fileID: 7084037848292785719, guid: 011f642ae59c1764f921e144f6d02bb5, type: 3}
