@@ -253,8 +253,12 @@ MonoBehaviour:
   crouchModifier: 0.5
   slideModifier: 2.5
   jumpForce: 1000
+  jetForce: 1500
+  jetWait: 0.5
+  jetRecovery: 2
   lengthOfSlide: 0.75
   max_health: 1000
+  max_fuel: 2
   normalCam: {fileID: 3154256829337983549}
   weaponCam: {fileID: 1140944544935189873}
   cameraParent: {fileID: 3154256828872899520}

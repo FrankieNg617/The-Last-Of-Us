@@ -24,5 +24,5 @@ MonoBehaviour:
   aimSpeed: 7
   reloadTime: 1.5
   mainFOV: 0.8
-  weaponFOV: 0.8
+  weaponFOV: 0.6
   prefab: {fileID: 7084037848292785719, guid: 8d98b3da0d47df847a65f4c3833ef221, type: 3}

@@ -13,8 +13,12 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     public float crouchModifier;
     public float slideModifier;
     public float jumpForce;
+    public float jetForce;
+    public float jetWait;
+    public float jetRecovery;
     public float lengthOfSlide;
     public int max_health;
+    public float max_fuel;
     public Camera normalCam;
     public Camera weaponCam;
     public GameObject cameraParent;
@@ -30,6 +34,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     private GameObject playerBody;
 
     private Transform ui_healthbar;
+    private Transform ui_fuelbar;
     private Text ui_ammo;
 
     private Rigidbody rig;
@@ -46,6 +51,8 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     private Vector3 origin;
 
     private int current_health;
+    private float current_fuel;
+    private float current_recovery;
 
     private Manager manager;
     private Weapon weapon;
@@ -57,6 +64,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     private Vector3 slide_dir;
 
     private bool isAiming;
+    private bool canJet;
 
     private float aimAngle;
 
@@ -88,6 +96,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         weapon = GetComponent<Weapon>();
 
         current_health = max_health;
+        current_fuel = max_fuel;
 
         cameraParent.SetActive(photonView.IsMine);
 
@@ -114,6 +123,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             playerBody.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
 
             ui_healthbar = GameObject.Find("HUD/Health/Bar").transform;
+            ui_fuelbar = GameObject.Find("HUD/Fuel/Bar").transform;
             ui_ammo = GameObject.Find("HUD/Ammo/Text").GetComponent<Text>();
             RefreshHealthBar();
         }
@@ -138,6 +148,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         bool jump = Input.GetKeyDown(KeyCode.Space);
         bool crouch = Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl);
         bool pause = Input.GetKeyDown(KeyCode.Escape);
+        bool jet = Input.GetKey(KeyCode.Space);
 
 
         //States
@@ -180,7 +191,31 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         {
             if(crouched) photonView.RPC("SetCrouch", RpcTarget.All, false);
             rig.AddForce(Vector3.up * jumpForce);
+            current_recovery = 0f;
         }
+
+
+        //Jetting
+        if (jump && !isGrounded)
+            canJet = true;
+        if (isGrounded)
+            canJet = false;
+
+        if (canJet && jet && current_fuel > 0)
+        {
+            rig.AddForce(Vector3.up * jetForce * Time.deltaTime, ForceMode.Acceleration);
+            current_fuel = Mathf.Max(0, current_fuel - Time.deltaTime);
+        }
+
+        if(isGrounded)
+        {
+            if (current_recovery < jetWait)
+                current_recovery = Mathf.Min(jetWait, current_recovery + Time.deltaTime);
+            else
+                current_fuel = Mathf.Min(max_fuel, current_fuel + Time.deltaTime * jetRecovery);
+        }
+
+        ui_fuelbar.localScale = new Vector3(current_fuel / max_fuel, 1, 1);
 
 
         //HeadBob
@@ -310,6 +345,9 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             weaponParentCurrentPos += Vector3.down * (slideAmount - crouchAmount);
             if (!crouched) photonView.RPC("SetCrouch", RpcTarget.All, true);
         }
+
+
+        
 
 
         //Aiming
