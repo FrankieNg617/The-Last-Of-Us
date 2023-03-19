@@ -127,6 +127,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         bool sprint = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         bool jump = Input.GetKeyDown(KeyCode.Space);
         bool crouch = Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl);
+        bool pause = Input.GetKeyDown(KeyCode.Escape);
 
 
         //States
@@ -134,6 +135,27 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         bool isJumping = jump && isGrounded;
         bool isSprinting = sprint && t_vmove > 0 && !isJumping && isGrounded;
         bool isCrouching = crouch && !isSprinting && !isJumping &&  isGrounded;
+
+
+        //Pause
+        if(pause)
+        {
+            GameObject.Find("Pause").GetComponent<Pause>().TogglePause();
+        }
+
+        if (Pause.paused)
+        {
+            t_hmove = 0f;
+            t_vmove = 0f;
+            sprint = false;
+            jump = false;
+            crouch = false;
+            pause = false;
+            isGrounded = false;
+            isJumping = false;
+            isSprinting = false;
+            isCrouching = false;
+        }
 
 
         //Crouching
@@ -213,6 +235,20 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         bool isJumping = jump && isGrounded;
         bool isSprinting = sprint && t_vmove > 0 && !isJumping && isGrounded;
         bool isSliding = isSprinting && slide && !sliding;
+
+
+        //Pause
+        if (Pause.paused)
+        {
+            t_hmove = 0f;
+            t_vmove = 0f;
+            sprint = false;
+            jump = false;
+            isGrounded = false;
+            isJumping = false;
+            isSprinting = false;
+            isSliding = false;
+        }
 
 
         //Movement

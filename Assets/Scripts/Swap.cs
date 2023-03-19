@@ -25,6 +25,7 @@ public class Swap : MonoBehaviour
 
     private void Update()
     {
+        if (Pause.paused) return;
         UpdateSway();
     }
     
