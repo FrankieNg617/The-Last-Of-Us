@@ -33,7 +33,7 @@ public class Weapon : MonoBehaviourPunCallbacks
     void Update()
     {
         if (Pause.paused && photonView.IsMine) return;
-        
+
         if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha1)) { photonView.RPC("Equip", RpcTarget.All, 0); }
         if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha2)) { photonView.RPC("Equip", RpcTarget.All, 1); }
 
@@ -124,7 +124,7 @@ public class Weapon : MonoBehaviourPunCallbacks
     void Aim(bool p_isAiming)
     {
         isAiming = p_isAiming;
-        Transform t_anchor = currentWeapon.transform.Find("Anchor");
+        Transform t_anchor = currentWeapon.transform.Find("Root");
         Transform t_state_ads = currentWeapon.transform.Find("States/ADS");
         Transform t_state_hip = currentWeapon.transform.Find("States/Hip");
 

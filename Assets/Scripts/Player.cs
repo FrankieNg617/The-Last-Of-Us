@@ -26,6 +26,8 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     public GameObject standingCollider;
     public GameObject crouchingCollider;
 
+    private GameObject playerBody;
+
     private Transform ui_healthbar;
     private Text ui_ammo;
 
@@ -77,6 +79,8 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
     private void Start()
     {
+        playerBody = GameObject.Find("Design/Default Armless Player/Cube");
+
         manager = GameObject.Find("Manager").GetComponent<Manager>();
         weapon = GetComponent<Weapon>();
 
@@ -103,6 +107,9 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
         if (photonView.IsMine)
         {
+            //hide player body but keep the shadow
+            playerBody.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+
             ui_healthbar = GameObject.Find("HUD/Health/Bar").transform;
             ui_ammo = GameObject.Find("HUD/Ammo/Text").GetComponent<Text>();
             RefreshHealthBar();
