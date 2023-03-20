@@ -15,13 +15,19 @@ public class Weapon : MonoBehaviourPunCallbacks
     public GameObject bulletHolePrefab;
     public LayerMask canBeShot;
     public AudioSource sfx;
+    public AudioClip hitmarkerSound;
     public bool isAiming = false;
 
     private float currentCooldown;
     private int currentIndex;  //the index of current weapon
     private GameObject currentWeapon;
 
+    private Image hitmarkerImage;
+    private float hitmarkerWait;
+
     private bool isReloading;
+
+    private Color CLEARWHITE = new Color(1, 1, 1, 0);
 
     #endregion
 
@@ -30,6 +36,10 @@ public class Weapon : MonoBehaviourPunCallbacks
     void Start()
     {
         foreach (Gun a in loadout) a.Initialize();
+
+        hitmarkerImage = GameObject.Find("HUD/Hitmarker/Image").GetComponent<Image>();
+        hitmarkerImage.color = CLEARWHITE;
+
         Equip(0);
     }
 
@@ -78,6 +88,18 @@ public class Weapon : MonoBehaviourPunCallbacks
 
             //weapon position elasticity
             currentWeapon.transform.localPosition = Vector3.Lerp(currentWeapon.transform.localPosition, Vector3.zero, Time.deltaTime * 4f);
+        }
+
+        if(photonView.IsMine)
+        {
+            if(hitmarkerWait > 0)
+            {
+                hitmarkerWait -= Time.deltaTime;
+            }
+            else if(hitmarkerImage.color.a > 0)
+            {
+                hitmarkerImage.color = Color.Lerp(hitmarkerImage.color, CLEARWHITE, Time.deltaTime * 2f);
+            }
         }
     }
 
@@ -193,7 +215,22 @@ public class Weapon : MonoBehaviourPunCallbacks
                     //shooting other player on network
                     if (t_hit.collider.gameObject.layer == 11)
                     {
+                        //give damage
                         t_hit.collider.transform.root.gameObject.GetPhotonView().RPC("TakeDamage", RpcTarget.All, loadout[currentIndex].damage);
+
+                        //show hitmarker
+                        hitmarkerImage.color = Color.white;
+                        sfx.PlayOneShot(hitmarkerSound);
+                        hitmarkerWait = 1f;
+                    }
+
+                    //shooting target
+                    if (t_hit.collider.gameObject.layer == 12)
+                    {   
+                        //show hitmarker
+                        hitmarkerImage.color = Color.white;
+                        sfx.PlayOneShot(hitmarkerSound);
+                        hitmarkerWait = 1f;
                     }
                 }
             }

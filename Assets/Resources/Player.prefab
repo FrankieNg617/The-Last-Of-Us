@@ -312,8 +312,9 @@ MonoBehaviour:
   bulletHolePrefab: {fileID: 5031034841414229636, guid: f7c6dc70310deac45a61c6e85d1cf00e, type: 3}
   canBeShot:
     serializedVersion: 2
-    m_Bits: 2359
+    m_Bits: 6455
   sfx: {fileID: 1247615263875732658}
+  hitmarkerSound: {fileID: 8300000, guid: 79f001c3718a79d40b853696f9365690, type: 3}
   isAiming: 0
 --- !u!114 &8524417602977275061
 MonoBehaviour:
@@ -580,7 +581,7 @@ Camera:
   m_Depth: -2
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 2871
+    m_Bits: 6967
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0

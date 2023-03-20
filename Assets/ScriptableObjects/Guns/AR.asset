@@ -28,6 +28,6 @@ MonoBehaviour:
   weaponFOV: 0.2
   gunshotSound: {fileID: 8300000, guid: 3948a8f309f95d642be8c36a6df66936, type: 3}
   pitchRandomization: 0.2
-  shotVolume: 0.15
+  shotVolume: 0.05
   prefab: {fileID: 7084037848292785719, guid: 011f642ae59c1764f921e144f6d02bb5, type: 3}
   recovery: 0
