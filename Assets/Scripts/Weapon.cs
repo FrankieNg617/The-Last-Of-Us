@@ -14,6 +14,7 @@ public class Weapon : MonoBehaviourPunCallbacks
     public Transform weaponParent;
     public GameObject bulletHolePrefab;
     public LayerMask canBeShot;
+    public AudioSource sfx;
     public bool isAiming = false;
 
     private float currentCooldown;
@@ -38,6 +39,7 @@ public class Weapon : MonoBehaviourPunCallbacks
 
         if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha1)) { photonView.RPC("Equip", RpcTarget.All, 0); }
         if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha2)) { photonView.RPC("Equip", RpcTarget.All, 1); }
+        if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha3)) { photonView.RPC("Equip", RpcTarget.All, 2); }
 
         if (currentWeapon != null)
         {
@@ -46,24 +48,30 @@ public class Weapon : MonoBehaviourPunCallbacks
                 //shoot
                 if (loadout[currentIndex].burst != 1)
                 {
-                    if (Input.GetMouseButtonDown(0) && currentCooldown <= 0)
+                    if (Input.GetMouseButtonDown(0) && !isReloading && currentCooldown <= 0)
                     {
                         if (loadout[currentIndex].FireBullet()) photonView.RPC("Shoot", RpcTarget.All);
-                        else StartCoroutine(Reload(loadout[currentIndex].reloadTime));
+                        if (currentGunData.GetClip() <= 0 && currentGunData.GetStash() > 0 && !isReloading) photonView.RPC("ReloadRPC", RpcTarget.All);
                     }
                 }
                 else
                 {
-                    if (Input.GetMouseButton(0) && currentCooldown <= 0)
+                    if (Input.GetMouseButton(0) && !isReloading && currentCooldown <= 0)
                     {
                         if (loadout[currentIndex].FireBullet()) photonView.RPC("Shoot", RpcTarget.All);
-                        else photonView.RPC("ReloadRPC", RpcTarget.All);
+                        if (currentGunData.GetClip() <= 0 && currentGunData.GetStash() > 0 && !isReloading) photonView.RPC("ReloadRPC", RpcTarget.All);
                     }
                 }
 
                 //reload
-                if (Input.GetKeyDown(KeyCode.R)) photonView.RPC("ReloadRPC", RpcTarget.All);
-
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    if (currentGunData.GetClip() < currentGunData.clipsize && currentGunData.GetStash() > 0 && !isReloading)
+                    {
+                        photonView.RPC("ReloadRPC", RpcTarget.All);
+                    }
+                }
+                  
                 //cooldown
                 if (currentCooldown > 0) currentCooldown -= Time.deltaTime;
             }
@@ -86,7 +94,7 @@ public class Weapon : MonoBehaviourPunCallbacks
     IEnumerator Reload(float p_wait)
     {
         isReloading = true;
-
+        
         if (currentWeapon.GetComponent<Animator>())
             currentWeapon.GetComponent<Animator>().Play("Reload", 0 ,0);
         else
@@ -94,7 +102,9 @@ public class Weapon : MonoBehaviourPunCallbacks
 
         yield return new WaitForSeconds(p_wait);
 
-        loadout[currentIndex].Reload();
+        if(currentGunData.recovery) loadout[currentIndex].SingleReload();
+        else loadout[currentIndex].Reload();
+
         currentWeapon.SetActive(true);
         isReloading = false;
     }
@@ -156,37 +166,50 @@ public class Weapon : MonoBehaviourPunCallbacks
     {
         Transform t_spawn = transform.Find("Cameras/Normal Camera");   //bullet spawn point: player's camera
 
-        //bloom
-        Vector3 t_bloom = t_spawn.position + t_spawn.forward * 1000f;
-        t_bloom += Random.Range(-loadout[currentIndex].bloom, loadout[currentIndex].bloom) * t_spawn.up;
-        t_bloom += Random.Range(-loadout[currentIndex].bloom, loadout[currentIndex].bloom) * t_spawn.right;
-        t_bloom -= t_spawn.position;
-        t_bloom.Normalize();
-
         //cooldown
         currentCooldown = loadout[currentIndex].fireRate;
-
-        //raycast
-        RaycastHit t_hit = new RaycastHit();
-        if (Physics.Raycast(t_spawn.position, t_bloom, out t_hit, 1000f, canBeShot))
+        
+        for (int i = 0; i < Mathf.Max(1, currentGunData.pellets); i++) 
         {
-            GameObject t_newHole = Instantiate(bulletHolePrefab, t_hit.point + t_hit.normal * 0.001f, Quaternion.identity) as GameObject;
-            t_newHole.transform.LookAt(t_hit.point + t_hit.normal);
-            Destroy(t_newHole, 5f);
+            //bloom
+            Vector3 t_bloom = t_spawn.position + t_spawn.forward * 1000f;
+            t_bloom += Random.Range(-loadout[currentIndex].bloom, loadout[currentIndex].bloom) * t_spawn.up;
+            t_bloom += Random.Range(-loadout[currentIndex].bloom, loadout[currentIndex].bloom) * t_spawn.right;
+            t_bloom -= t_spawn.position;
+            t_bloom.Normalize();
 
-            if (photonView.IsMine)
+        
+
+            //raycast
+            RaycastHit t_hit = new RaycastHit();
+            if (Physics.Raycast(t_spawn.position, t_bloom, out t_hit, 1000f, canBeShot))
             {
-                //shooting other player on network
-                if (t_hit.collider.gameObject.layer == 11)
+               GameObject t_newHole = Instantiate(bulletHolePrefab, t_hit.point + t_hit.normal * 0.001f, Quaternion.identity) as GameObject;
+                t_newHole.transform.LookAt(t_hit.point + t_hit.normal);
+                Destroy(t_newHole, 5f);
+
+                if (photonView.IsMine)
                 {
-                    t_hit.collider.transform.root.gameObject.GetPhotonView().RPC("TakeDamage", RpcTarget.All, loadout[currentIndex].damage);
+                    //shooting other player on network
+                    if (t_hit.collider.gameObject.layer == 11)
+                    {
+                        t_hit.collider.transform.root.gameObject.GetPhotonView().RPC("TakeDamage", RpcTarget.All, loadout[currentIndex].damage);
+                    }
                 }
             }
         }
+        
+        //sound
+        sfx.Stop();
+        sfx.clip = currentGunData.gunshotSound;
+        sfx.pitch = 1 - currentGunData.pitchRandomization + Random.Range(-currentGunData.pitchRandomization, currentGunData.pitchRandomization);
+        sfx.volume = currentGunData.shotVolume;
+        sfx.Play();
 
         //gun fx
         currentWeapon.transform.Rotate(-loadout[currentIndex].recoil, 0, 0);
         currentWeapon.transform.position -= currentWeapon.transform.forward * loadout[currentIndex].kickBack;
+        if (currentGunData.recovery) currentWeapon.GetComponent<Animator>().Play("Recovery", 0 ,0);
     }
 
     [PunRPC]

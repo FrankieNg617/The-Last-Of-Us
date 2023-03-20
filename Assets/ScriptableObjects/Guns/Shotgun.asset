@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 62f79912e2b365e4ea59878896cd7219, type: 3}
-  m_Name: AR
+  m_Name: Shotgun
   m_EditorClassIdentifier: 
   name: AR
-  damage: 100
-  ammo: 150
-  burst: 1
-  pellets: 0
-  clipsize: 32
-  fireRate: 0.1
-  bloom: 20
-  recoil: 4
-  kickBack: 0.05
+  damage: 150
+  ammo: 50
+  burst: 0
+  pellets: 10
+  clipsize: 5
+  fireRate: 0.8
+  bloom: 40
+  recoil: 15
+  kickBack: 0.2
   aimSpeed: 7
-  reloadTime: 2
-  mainFOV: 0.6
+  reloadTime: 1.25
+  mainFOV: 0.7
   weaponFOV: 0.2
-  gunshotSound: {fileID: 8300000, guid: 3948a8f309f95d642be8c36a6df66936, type: 3}
+  gunshotSound: {fileID: 8300000, guid: 258314b806624cd4f806a24f2e7cc265, type: 3}
   pitchRandomization: 0.2
   shotVolume: 0.15
-  prefab: {fileID: 7084037848292785719, guid: 011f642ae59c1764f921e144f6d02bb5, type: 3}
-  recovery: 0
+  prefab: {fileID: 7084037848292785719, guid: c108b54bd81f1a847917335a71db4587, type: 3}
+  recovery: 1

@@ -9,6 +9,7 @@ public class Gun : ScriptableObject
     public int damage;
     public int ammo;
     public int burst; //0 semi | 1 auto | 2+ burst fire
+    public int pellets;
     public int clipsize;
     public float fireRate;
     public float bloom;
@@ -18,7 +19,11 @@ public class Gun : ScriptableObject
     public float reloadTime;
     [Range(0, 1)] public float mainFOV;
     [Range(0, 1)] public float weaponFOV;
+    public AudioClip gunshotSound;
+    public float pitchRandomization;
+    public float shotVolume;
     public GameObject prefab;
+    public bool recovery; //whether weapon has recovery anim
 
     private int stash; //current ammo
     private int clip; //current clip
@@ -44,6 +49,12 @@ public class Gun : ScriptableObject
         stash += clip;
         clip = Mathf.Min(clipsize, stash);
         stash -= clip;
+    }
+
+    public void SingleReload()
+    {
+        clip += 1;
+        stash -= 1;
     }
 
     public int GetStash(){ return stash; }
