@@ -8,7 +8,7 @@ public class Weapon : MonoBehaviourPunCallbacks
 {
     #region Variables
 
-    public Gun[] loadout;
+    public List<Gun> loadout;
     [HideInInspector] public Gun currentGunData;
 
     public Transform weaponParent;
@@ -26,6 +26,7 @@ public class Weapon : MonoBehaviourPunCallbacks
     private float hitmarkerWait;
 
     private bool isReloading;
+    private bool isEquipping;
 
     private Color CLEARWHITE = new Color(1, 1, 1, 0);
 
@@ -49,7 +50,6 @@ public class Weapon : MonoBehaviourPunCallbacks
 
         if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha1)) { photonView.RPC("Equip", RpcTarget.All, 0); }
         if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha2)) { photonView.RPC("Equip", RpcTarget.All, 1); }
-        if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha3)) { photonView.RPC("Equip", RpcTarget.All, 2); }
 
         if (currentWeapon != null)
         {
@@ -58,7 +58,7 @@ public class Weapon : MonoBehaviourPunCallbacks
                 //shoot
                 if (loadout[currentIndex].burst != 1)
                 {
-                    if (Input.GetMouseButtonDown(0) && !isReloading && currentCooldown <= 0)
+                    if (Input.GetMouseButtonDown(0) && !isReloading && !isEquipping && currentCooldown <= 0)
                     {
                         if (loadout[currentIndex].FireBullet()) photonView.RPC("Shoot", RpcTarget.All);
                         if (currentGunData.GetClip() <= 0 && currentGunData.GetStash() > 0 && !isReloading) photonView.RPC("ReloadRPC", RpcTarget.All);
@@ -66,7 +66,7 @@ public class Weapon : MonoBehaviourPunCallbacks
                 }
                 else
                 {
-                    if (Input.GetMouseButton(0) && !isReloading && currentCooldown <= 0)
+                    if (Input.GetMouseButton(0) && !isReloading && !isEquipping && currentCooldown <= 0)
                     {
                         if (loadout[currentIndex].FireBullet()) photonView.RPC("Shoot", RpcTarget.All);
                         if (currentGunData.GetClip() <= 0 && currentGunData.GetStash() > 0 && !isReloading) photonView.RPC("ReloadRPC", RpcTarget.All);
@@ -134,6 +134,8 @@ public class Weapon : MonoBehaviourPunCallbacks
     [PunRPC]
     void Equip(int p_ind)
     {
+        if (loadout.Count == p_ind) return;
+
         if (currentWeapon != null)
         {
             if(isReloading) StopCoroutine("Reload");
@@ -150,21 +152,66 @@ public class Weapon : MonoBehaviourPunCallbacks
         if (photonView.IsMine) ChangeLayersRecursively(t_newWeapon, 10);
         else ChangeLayersRecursively(t_newWeapon, 0);
 
-        t_newWeapon.GetComponent<Animator>().Play("Equip", 0, 0);
-
         currentWeapon = t_newWeapon;
         currentGunData = loadout[p_ind];
+
+        StartCoroutine(EquipAnim());
+    }
+
+    IEnumerator EquipAnim()
+    {
+        isEquipping = true;
+        
+        currentWeapon.GetComponent<Animator>().Play("Equip", 0, 0);
+
+        yield return new WaitForSeconds(0.6f);
+        isEquipping = false;
+    }
+
+    [PunRPC]
+    void PickupWeapon(string name)
+    {
+        //find the weapon from a library
+        Gun newWeapon = GunLibrary.FindGun(name);
+
+        if(!loadout.Contains(newWeapon))
+        {
+            //if the pickup weapon is not in your loadout
+            if (loadout.Count == 2)
+            {
+                //replace primary weapon 
+                loadout[0] = newWeapon;
+                Equip(0);
+            }
+            else
+            {
+                loadout.Add(newWeapon);
+                loadout.Reverse();
+                Equip(0);
+            }
+
+            newWeapon.Initialize();
+        }
+        else
+        {
+            //fill the ammo of the pickup weapon
+            int newWeaponIndex = loadout.IndexOf(newWeapon);
+            Equip(newWeaponIndex);
+            newWeapon.Initialize();
+        }
     }
 
     private void ChangeLayersRecursively (GameObject p_target, int p_layer)
     {
         p_target.layer = p_layer;
         foreach (Transform a in p_target.transform) ChangeLayersRecursively(a.gameObject, p_layer);
-    }
+    } 
 
-    public void Aim(bool p_isAiming)
+    public bool Aim(bool p_isAiming)
     {
-        if (!currentWeapon) return;
+        if (!currentWeapon) return false;
+
+        if(isReloading) p_isAiming = false;
 
         isAiming = p_isAiming;
         Transform t_anchor = currentWeapon.transform.Find("Root");
@@ -181,6 +228,8 @@ public class Weapon : MonoBehaviourPunCallbacks
             //hip
             t_anchor.position = Vector3.Lerp(t_anchor.position, t_state_hip.position, Time.deltaTime * loadout[currentIndex].aimSpeed);
         }
+
+        return p_isAiming;
     }
 
     [PunRPC]

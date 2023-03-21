@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName="New Gun", menuName="Gun")]
 public class Gun : ScriptableObject
 {
-    public string name;
+    public string GunName;
     public int damage;
     public int ammo;
     public int burst; //0 semi | 1 auto | 2+ burst fire
@@ -23,6 +23,7 @@ public class Gun : ScriptableObject
     public float pitchRandomization;
     public float shotVolume;
     public GameObject prefab;
+    public GameObject display;
     public bool recovery; //whether weapon has recovery anim
 
     private int stash; //current ammo

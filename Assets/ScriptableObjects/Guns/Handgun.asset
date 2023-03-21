@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62f79912e2b365e4ea59878896cd7219, type: 3}
   m_Name: Handgun
   m_EditorClassIdentifier: 
-  name: Handgun
+  GunName: Handgun
   damage: 100
   ammo: 20
   burst: 0
+  pellets: 0
   clipsize: 8
   fireRate: 0.15
   bloom: 1
@@ -29,3 +30,5 @@ MonoBehaviour:
   pitchRandomization: 0.025
   shotVolume: 0.1
   prefab: {fileID: 7084037848292785719, guid: 8d98b3da0d47df847a65f4c3833ef221, type: 3}
+  display: {fileID: 1498509836972433997, guid: 49fdea408327317448108c02033ebdec, type: 3}
+  recovery: 0

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62f79912e2b365e4ea59878896cd7219, type: 3}
   m_Name: Shotgun
   m_EditorClassIdentifier: 
-  name: AR
+  GunName: Shotgun
   damage: 150
   ammo: 50
   burst: 0
@@ -30,4 +30,5 @@ MonoBehaviour:
   pitchRandomization: 0.2
   shotVolume: 0.15
   prefab: {fileID: 7084037848292785719, guid: c108b54bd81f1a847917335a71db4587, type: 3}
+  display: {fileID: 1003904748844868153, guid: 4ff936c4f0ad2724c97926bd00597579, type: 3}
   recovery: 1

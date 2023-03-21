@@ -30,6 +30,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     public float crouchAmount;
     public GameObject standingCollider;
     public GameObject crouchingCollider;
+    public GameObject mesh;
 
     private GameObject playerBody;
 
@@ -68,6 +69,9 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
     private float aimAngle;
 
+    private Vector3 normalCamTarget;
+    private Vector3 weaponCamTarget;
+
     #endregion
 
     #region Photon Callbacks
@@ -90,7 +94,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
     private void Start()
     {
-        playerBody = GameObject.Find("Design/Default Armless Player/Cube");
+        //playerBody = GameObject.Find("Design/Default Armless Player/Cube");
 
         manager = GameObject.Find("Manager").GetComponent<Manager>();
         weapon = GetComponent<Weapon>();
@@ -105,6 +109,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             gameObject.layer = 11;
             standingCollider.layer = 11;
             crouchingCollider.layer = 11;
+            ChangeLayerRecursively(mesh.transform, 11);
         }
 
         baseFOV = normalCam.fieldOfView;
@@ -120,14 +125,19 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         if (photonView.IsMine)
         {
             //hide player body but keep the shadow
-            playerBody.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+            //playerBody.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
 
             ui_healthbar = GameObject.Find("HUD/Health/Bar").transform;
             ui_fuelbar = GameObject.Find("HUD/Fuel/Bar").transform;
             ui_ammo = GameObject.Find("HUD/Ammo/Text").GetComponent<Text>();
             RefreshHealthBar();
         }
+    }
 
+    private void ChangeLayerRecursively(Transform p_trans, int p_layer)
+    {   
+        p_trans.gameObject.layer = p_layer;
+        foreach (Transform t in p_trans) ChangeLayerRecursively(t, p_layer);
     }
 
     private void Update()
@@ -218,40 +228,47 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         ui_fuelbar.localScale = new Vector3(current_fuel / max_fuel, 1, 1);
 
 
-        //HeadBob
-        if (sliding)
+        //Head Bob
+        if (!isGrounded)
+        {
+            //airborne
+            HeadBob(idleCounter, 0.01f, 0.01f);
+            idleCounter += 0;
+            weaponParent.localPosition = Vector3.MoveTowards(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 2f * 0.2f);
+        }
+        else if (sliding)
         {
             //sliding
             HeadBob(movementCounter, 0.15f, 0.075f);
-            weaponParent.localPosition = Vector3.Lerp(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 10f);
+            weaponParent.localPosition = Vector3.MoveTowards(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 10f * 0.2f);
         }
         else if (t_hmove == 0 && t_vmove == 0)
         {
             //idling
             HeadBob(idleCounter, 0.01f, 0.01f);
             idleCounter += Time.deltaTime;
-            weaponParent.localPosition = Vector3.Lerp(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 2f);
+            weaponParent.localPosition = Vector3.MoveTowards(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 2f * 0.2f);
         }
         else if (!isSprinting && !crouched)
         {
             //walking
             HeadBob(movementCounter, 0.035f, 0.035f);
-            movementCounter += Time.deltaTime * 3f;
-            weaponParent.localPosition = Vector3.Lerp(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 6f);
+            movementCounter += Time.deltaTime * 6f;
+            weaponParent.localPosition = Vector3.MoveTowards(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 6f * 0.2f);
         }
-        else if (crouched)
+        else if(crouched)
         {
             //crouching
             HeadBob(movementCounter, 0.02f, 0.02f);
-            movementCounter += Time.deltaTime * 1.75f;
-            weaponParent.localPosition = Vector3.Lerp(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 6f);
+            movementCounter += Time.deltaTime * 4f;
+            weaponParent.localPosition = Vector3.MoveTowards(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 6f * 0.2f);
         }
         else
         {
             //sprinting
-            HeadBob(movementCounter, 0.15f, 0.075f);
-            movementCounter += Time.deltaTime * 7f;
-            weaponParent.localPosition = Vector3.Lerp(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 10f);
+            HeadBob(movementCounter, 0.05f, 0.05f);
+            movementCounter += Time.deltaTime * 13.5f;
+            weaponParent.localPosition = Vector3.MoveTowards(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 10f * 0.2f);
         }
 
 
@@ -347,11 +364,8 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         }
 
 
-        
-
-
         //Aiming
-        weapon.Aim(isAiming);
+        isAiming = weapon.Aim(isAiming);
 
 
         //Camera Stuff
@@ -360,8 +374,8 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             normalCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV * sprintFOVModifier * 1.15f, Time.deltaTime * 8f);
             weaponCam.fieldOfView = Mathf.Lerp(normalCam.fieldOfView, baseFOV * sprintFOVModifier * 1.15f, Time.deltaTime * 8f);
 
-            normalCam.transform.localPosition = Vector3.Lerp(normalCam.transform.localPosition, origin + Vector3.down * slideAmount, Time.deltaTime*6f);
-            weaponCam.transform.localPosition = Vector3.Lerp(weaponCam.transform.localPosition, origin + Vector3.down * slideAmount, Time.deltaTime*6f);
+            normalCamTarget = Vector3.MoveTowards(normalCam.transform.localPosition, origin + Vector3.down * slideAmount, Time.deltaTime);
+            weaponCamTarget = Vector3.MoveTowards(weaponCam.transform.localPosition, origin + Vector3.down * slideAmount, Time.deltaTime);
         }
         else
         {
@@ -383,16 +397,21 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
             if (crouched)
             {
-                normalCam.transform.localPosition = Vector3.Lerp(normalCam.transform.localPosition, origin + Vector3.down * crouchAmount, Time.deltaTime*6f);
-                weaponCam.transform.localPosition = Vector3.Lerp(weaponCam.transform.localPosition, origin + Vector3.down * crouchAmount, Time.deltaTime*6f);
+                normalCamTarget = Vector3.MoveTowards(normalCam.transform.localPosition, origin + Vector3.down * crouchAmount, Time.deltaTime);
+                weaponCamTarget = Vector3.MoveTowards(weaponCam.transform.localPosition, origin + Vector3.down * crouchAmount, Time.deltaTime);
             }
             else
             {
-                normalCam.transform.localPosition = Vector3.Lerp(normalCam.transform.localPosition, origin, Time.deltaTime*6f);
-                weaponCam.transform.localPosition = Vector3.Lerp(weaponCam.transform.localPosition, origin, Time.deltaTime*6f);
+                normalCamTarget = Vector3.MoveTowards(normalCam.transform.localPosition, origin, Time.deltaTime);
+                weaponCamTarget = Vector3.MoveTowards(weaponCam.transform.localPosition, origin, Time.deltaTime);
             }
         }
+    }
 
+    private void LateUpdate()
+    {
+        normalCam.transform.localPosition = normalCamTarget;
+        weaponCam.transform.localPosition = weaponCamTarget;
     }
 
     #endregion

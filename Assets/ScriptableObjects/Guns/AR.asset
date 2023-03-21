@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62f79912e2b365e4ea59878896cd7219, type: 3}
   m_Name: AR
   m_EditorClassIdentifier: 
-  name: AR
+  GunName: AR
   damage: 100
   ammo: 150
   burst: 1
@@ -30,4 +30,5 @@ MonoBehaviour:
   pitchRandomization: 0.2
   shotVolume: 0.05
   prefab: {fileID: 7084037848292785719, guid: 011f642ae59c1764f921e144f6d02bb5, type: 3}
+  display: {fileID: 3066328646004347824, guid: 01b5a1d947e09ac488761df746d28b3c, type: 3}
   recovery: 0

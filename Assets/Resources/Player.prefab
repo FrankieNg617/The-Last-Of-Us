@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 417588016267031865}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: head_end
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6415750687479554812}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: left.leg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -72,7 +72,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6696361001615984583}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -151,7 +151,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -196,7 +196,7 @@ GameObject:
   - component: {fileID: 4771682388271970075}
   m_Layer: 9
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -272,6 +272,7 @@ MonoBehaviour:
   crouchAmount: 0.5
   standingCollider: {fileID: 3892234248321482715}
   crouchingCollider: {fileID: 7034579138895964802}
+  mesh: {fileID: 6788722785089143763}
 --- !u!114 &3154256828308551014
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -304,9 +305,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   loadout:
-  - {fileID: 11400000, guid: b9c729305f01b91449853a98d624cea5, type: 2}
   - {fileID: 11400000, guid: 68ff340a3f73cd347b7d5fc67b2b4a9f, type: 2}
-  - {fileID: 11400000, guid: d14f49d462887174c977f2170ec8e95f, type: 2}
   currentGunData: {fileID: 0}
   weaponParent: {fileID: 3154256828454588970}
   bulletHolePrefab: {fileID: 5031034841414229636, guid: f7c6dc70310deac45a61c6e85d1cf00e, type: 3}
@@ -573,7 +572,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -581,7 +580,7 @@ Camera:
   m_Depth: -2
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 6967
+    m_Bits: 6455
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -610,7 +609,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3656210848950549047}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: right.leg_end
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -641,7 +640,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3012176536583096823}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Armature
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -773,7 +772,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1213264076632800197}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: left.leg_end
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -932,7 +931,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8657488663586013127}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: left.thigh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -964,7 +963,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7822200990319446945}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -997,7 +996,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6992987794311971340}
   - component: {fileID: 2749292788242184988}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1087,7 +1086,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6160277550735464809}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Default Armless Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1120,7 +1119,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4589261031705934710}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: right.thigh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1250,7 +1249,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6672490143890032335}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: right.leg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
