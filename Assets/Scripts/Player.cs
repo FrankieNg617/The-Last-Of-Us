@@ -72,6 +72,8 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     private Vector3 normalCamTarget;
     private Vector3 weaponCamTarget;
 
+    private Animator anim;
+
     #endregion
 
     #region Photon Callbacks
@@ -131,6 +133,8 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             ui_fuelbar = GameObject.Find("HUD/Fuel/Bar").transform;
             ui_ammo = GameObject.Find("HUD/Ammo/Text").GetComponent<Text>();
             RefreshHealthBar();
+
+            anim = GetComponent<Animator>();
         }
     }
 
@@ -406,6 +410,19 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
                 weaponCamTarget = Vector3.MoveTowards(weaponCam.transform.localPosition, origin, Time.deltaTime);
             }
         }
+
+        //Animations
+        float t_anim_horizontal = 0f;
+        float t_anim_vertical = 0f;
+
+        if (isGrounded)
+        {
+            t_anim_horizontal = t_direction.x;
+            t_anim_vertical = t_direction.z;
+        }
+
+        anim.SetFloat("Horizontal", t_anim_horizontal);
+        anim.SetFloat("Vertical", t_anim_vertical);
     }
 
     private void LateUpdate()
