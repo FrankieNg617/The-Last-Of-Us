@@ -47,6 +47,9 @@ public class Pickup : MonoBehaviourPunCallbacks
         weapon = weapons[P_ind];
         newDisplay = Instantiate(weapon.display, gunDisplay.transform.position, gunDisplay.transform.rotation) as GameObject;
         newDisplay.transform.SetParent(gunDisplay.transform);
+
+        GetComponent<Animator>().enabled = true;
+        GetComponent<Animator>().Play("Spawn", 0, 0);
     }
 
     private void OnTriggerEnter (Collider other)
@@ -69,6 +72,7 @@ public class Pickup : MonoBehaviourPunCallbacks
 
         foreach (GameObject a in targets) a.SetActive(false);
         Destroy(newDisplay);
+        GetComponent<Animator>().enabled = false;
     } 
 
     private void Enable ()
