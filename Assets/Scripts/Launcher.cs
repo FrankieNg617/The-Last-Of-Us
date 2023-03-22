@@ -2,9 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using UnityEngine.UI;
+
+public class ProfileData
+{
+    public string username;
+    public int level;
+    public int xp;
+}
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
+    public InputField usernameField;
+    public static ProfileData myProfile = new ProfileData();
+
+
     public void Awake()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
@@ -54,6 +66,15 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public void StartGame()
     {   
+        if(string.IsNullOrEmpty(usernameField.text))
+        {
+            myProfile.username = "CYY" + Random.Range(100, 1000);
+        }
+        else
+        {
+            myProfile.username = usernameField.text;
+        }
+
         //only the first player need to load the map
         if(PhotonNetwork.CurrentRoom.PlayerCount == 1)
         {

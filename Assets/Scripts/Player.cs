@@ -37,6 +37,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     private Transform ui_healthbar;
     private Transform ui_fuelbar;
     private Text ui_ammo;
+    private Text ui_username;
 
     private Rigidbody rig;
 
@@ -132,7 +133,10 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             ui_healthbar = GameObject.Find("HUD/Health/Bar").transform;
             ui_fuelbar = GameObject.Find("HUD/Fuel/Bar").transform;
             ui_ammo = GameObject.Find("HUD/Ammo/Text").GetComponent<Text>();
+            ui_username = GameObject.Find("HUD/Username/Text").GetComponent<Text>();
+
             RefreshHealthBar();
+            ui_username.text = Launcher.myProfile.username;
 
             anim = GetComponent<Animator>();
         }

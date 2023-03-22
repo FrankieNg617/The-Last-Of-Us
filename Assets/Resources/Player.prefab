@@ -251,7 +251,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05a5d7e9f5c1ab144abc253510ce5289, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 200
+  speed: 400
   sprintModifier: 2
   crouchModifier: 0.5
   slideModifier: 2.5
