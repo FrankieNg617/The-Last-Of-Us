@@ -146,6 +146,10 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
             anim = GetComponent<Animator>();
         }
+        else
+        {
+            GetComponent<Rigidbody>().isKinematic = true; 
+        }
     }
 
     private void ChangeLayerRecursively(Transform p_trans, int p_layer)
