@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 using Photon.Pun;
+using TMPro;
 
 public class Player : MonoBehaviourPunCallbacks, IPunObservable
 {
@@ -25,6 +26,9 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     public Transform weaponParent;
     public Transform groundDetector;
     public LayerMask ground;
+
+    [HideInInspector] public ProfileData playerProfile;
+    public TextMeshPro playerUsername;
 
     public float slideAmount;
     public float crouchAmount;
@@ -137,6 +141,8 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
             RefreshHealthBar();
             ui_username.text = Launcher.myProfile.username;
+
+            photonView.RPC("SyncProfile", RpcTarget.AllBuffered, Launcher.myProfile.username, Launcher.myProfile.level, Launcher.myProfile.xp);
 
             anim = GetComponent<Animator>();
         }
@@ -463,6 +469,13 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     {
         float t_health_ratio = (float)current_health / (float)max_health;
         ui_healthbar.localScale = Vector3.Lerp(ui_healthbar.localScale, new Vector3(t_health_ratio, 1, 1), Time.deltaTime * 8f);
+    }
+
+    [PunRPC]
+    private void SyncProfile(string p_usrname, int p_level, int p_xp)
+    {
+        playerProfile = new ProfileData(p_usrname, p_level, p_xp);
+        playerUsername.text = playerProfile.username;
     }
 
     [PunRPC]

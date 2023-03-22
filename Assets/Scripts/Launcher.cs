@@ -4,11 +4,26 @@ using UnityEngine;
 using Photon.Pun;
 using UnityEngine.UI;
 
+[System.Serializable]
 public class ProfileData
 {
     public string username;
     public int level;
     public int xp;
+
+    public ProfileData()
+    {
+        this.username = "DEFAULT USERNAME";
+        this.level = 0;
+        this.xp = 0;
+    }
+
+    public ProfileData(string u, int l, int x)
+    {
+        this.username = u;
+        this.level = l;
+        this.xp = x;
+    }
 }
 
 public class Launcher : MonoBehaviourPunCallbacks
@@ -20,6 +35,10 @@ public class Launcher : MonoBehaviourPunCallbacks
     public void Awake()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
+
+        myProfile = Data.LoadProfile();
+        usernameField.text = myProfile.username;
+
         Connect();
     }
 
@@ -55,7 +74,8 @@ public class Launcher : MonoBehaviourPunCallbacks
     }
 
     public void Join()
-    {
+    {   
+        SetUpClientProfile();
         PhotonNetwork.JoinRandomRoom();
     }
 
@@ -64,6 +84,20 @@ public class Launcher : MonoBehaviourPunCallbacks
         PhotonNetwork.CreateRoom("");
     }
 
+    public void SetUpClientProfile()
+    {
+        if(string.IsNullOrEmpty(usernameField.text))
+        {
+            myProfile.username = "CYY" + Random.Range(100, 1000);
+        }
+        else
+        {
+            myProfile.username = usernameField.text;
+        }
+
+        Data.SaveProfile(myProfile);
+    }
+     
     public void StartGame()
     {   
         if(string.IsNullOrEmpty(usernameField.text))
@@ -78,6 +112,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         //only the first player need to load the map
         if(PhotonNetwork.CurrentRoom.PlayerCount == 1)
         {
+            Data.SaveProfile(myProfile);
             PhotonNetwork.LoadLevel(1);
         }
     }
