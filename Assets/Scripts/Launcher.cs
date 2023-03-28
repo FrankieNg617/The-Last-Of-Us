@@ -148,6 +148,18 @@ public class Launcher : MonoBehaviourPunCallbacks
         foreach (Transform a in content) Destroy(a.gameObject);
     }
 
+    private void VerifyUsername ()
+    {
+        if (string.IsNullOrEmpty(usernameField.text))
+        {
+            myProfile.username = "USER" + Random.Range(100, 1000);
+        }
+        else
+        {
+            myProfile.username = usernameField.text;
+        }
+    }
+
     public override void OnRoomListUpdate(List<RoomInfo> p_list)
     {
         roomList = p_list;
@@ -176,33 +188,22 @@ public class Launcher : MonoBehaviourPunCallbacks
     public void JoinRoom (Transform p_button)
     {
         string t_roomName = p_button.Find("Name").GetComponent<Text>().text;
+
+        VerifyUsername();
+        
         PhotonNetwork.JoinRoom(t_roomName);  
     }
 
     public void SetUpClientProfile()
     {
-        if(string.IsNullOrEmpty(usernameField.text))
-        {
-            myProfile.username = "User" + Random.Range(100, 1000);
-        }
-        else
-        {
-            myProfile.username = usernameField.text;
-        }
+        VerifyUsername();
 
         Data.SaveProfile(myProfile);
     }
      
     public void StartGame()
     {   
-        if(string.IsNullOrEmpty(usernameField.text))
-        {
-            myProfile.username = "User" + Random.Range(100, 1000);
-        }
-        else
-        {
-            myProfile.username = usernameField.text;
-        }
+        VerifyUsername();
 
         //only the first player need to load the map
         if(PhotonNetwork.CurrentRoom.PlayerCount == 1)

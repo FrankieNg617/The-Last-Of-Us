@@ -268,7 +268,7 @@ public class Weapon : MonoBehaviourPunCallbacks
                     if (t_hit.collider.gameObject.layer == 11)
                     {
                         //give damage
-                        t_hit.collider.transform.root.gameObject.GetPhotonView().RPC("TakeDamage", RpcTarget.All, loadout[currentIndex].damage);
+                        t_hit.collider.transform.root.gameObject.GetPhotonView().RPC("TakeDamage", RpcTarget.All, loadout[currentIndex].damage, PhotonNetwork.LocalPlayer.ActorNumber);
 
                         //show hitmarker
                         hitmarkerImage.color = Color.white;
@@ -302,9 +302,9 @@ public class Weapon : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    void TakeDamage(int p_damage)
+    void TakeDamage(int p_damage, int p_actor)
     {
-        GetComponent<Player>().TakeDamage(p_damage);
+        GetComponent<Player>().TakeDamage(p_damage, p_actor);
     }
 
     #endregion

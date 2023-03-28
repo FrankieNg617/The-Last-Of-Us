@@ -502,7 +502,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
     #region Public Methods
 
-    public void TakeDamage(int p_damage)
+    public void TakeDamage(int p_damage, int p_actor)
     {
         if (photonView.IsMine)
         {
@@ -512,6 +512,10 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             if (current_health <= 0)
             {
                 manager.Spawn();
+                manager.ChangeStat_S(PhotonNetwork.LocalPlayer.ActorNumber, 1, 1);
+
+                if (p_actor >= 0) manager.ChangeStat_S(p_actor, 0, 1);
+
                 PhotonNetwork.Destroy(gameObject);
             }
         }
