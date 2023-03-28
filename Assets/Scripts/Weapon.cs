@@ -255,9 +255,12 @@ public class Weapon : MonoBehaviourPunCallbacks
             RaycastHit t_hit = new RaycastHit();
             if (Physics.Raycast(t_spawn.position, t_bloom, out t_hit, 1000f, canBeShot))
             {
-               GameObject t_newHole = Instantiate(bulletHolePrefab, t_hit.point + t_hit.normal * 0.001f, Quaternion.identity) as GameObject;
-                t_newHole.transform.LookAt(t_hit.point + t_hit.normal);
-                Destroy(t_newHole, 5f);
+                if (t_hit.collider.gameObject.layer != 11)
+                {
+                    GameObject t_newHole = Instantiate(bulletHolePrefab, t_hit.point + t_hit.normal * 0.001f, Quaternion.identity) as GameObject;
+                    t_newHole.transform.LookAt(t_hit.point + t_hit.normal);
+                    Destroy(t_newHole, 5f);
+                }
 
                 if (photonView.IsMine)
                 {

@@ -59,7 +59,7 @@ public class Pickup : MonoBehaviourPunCallbacks
         if (other.attachedRigidbody.gameObject.tag.Equals("Player"))
         {
             Weapon weaponController = other.attachedRigidbody.gameObject.GetComponent<Weapon>();
-            weaponController.photonView.RPC("PickupWeapon", RpcTarget.AllBuffered, weapon.name);
+            weaponController.photonView.RPC("PickupWeapon", RpcTarget.AllBuffered, weapon.GunName);
             photonView.RPC("Disable", RpcTarget.AllBuffered);
         }
     }
