@@ -8,7 +8,13 @@ public class Pause : MonoBehaviour
 {
     public static bool paused = false;
     private bool disconnecting = false;
+    private Manager manager;
 
+    private void Start()
+    {
+        manager = GameObject.Find("Manager").GetComponent<Manager>();;
+    }
+    
     public void TogglePause()
     {
         if (disconnecting) return;
@@ -23,7 +29,9 @@ public class Pause : MonoBehaviour
     public void Quit()
     {
         disconnecting = true;
+        manager.RemovePlayer();
         PhotonNetwork.LeaveRoom();
         SceneManager.LoadScene(0);
     }
+
 }

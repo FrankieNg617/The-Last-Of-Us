@@ -120,8 +120,6 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         baseFOV = normalCam.fieldOfView;
         origin = normalCam.transform.localPosition;
 
-        if (Camera.main) Camera.main.enabled = false;
-
         rig = GetComponent<Rigidbody>();
         weaponParentOrigin = weaponParent.localPosition;
         weaponParentCurrentPos = weaponParentOrigin;

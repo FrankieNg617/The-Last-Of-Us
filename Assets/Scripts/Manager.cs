@@ -23,9 +23,23 @@ public class PlayerInfo
     }
 }
 
-public class Manager : MonoBehaviour, IOnEventCallback
+public enum GameState
+{
+    Waiting = 0,
+    Starting = 1,
+    Playing = 2,
+    Ending = 3
+}
+
+public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
 {
     #region Fields
+
+    public int mainmenu = 0;
+    public int killcount = 3;
+    public bool perpetual = false;
+
+    public GameObject mapcam;
 
     public string player_prefab_string;
     public GameObject player_prefab;
@@ -36,6 +50,10 @@ public class Manager : MonoBehaviour, IOnEventCallback
 
     public Text ui_mykills;
     public Text ui_mydeaths;
+    public Transform ui_leaderboard;
+    public Transform ui_endgame;
+
+    private GameState state = GameState.Waiting;
 
     #endregion
 
@@ -46,6 +64,7 @@ public class Manager : MonoBehaviour, IOnEventCallback
         NewPlayer,
         UpdatePlayers,
         ChangeStat,
+        NewMatch
     }
 
     #endregion
@@ -54,10 +73,26 @@ public class Manager : MonoBehaviour, IOnEventCallback
 
     private void Start()
     {
+        mapcam.SetActive(false);
+
         ValidateConnection();
         InitializeUI();
         NewPlayer_S(Launcher.myProfile);
         Spawn();
+    }
+
+    private void Update()
+    {
+        if (state == GameState.Ending)
+        {
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            if (ui_leaderboard.gameObject.activeSelf) ui_leaderboard.gameObject.SetActive(false);
+            else Leaderboard(ui_leaderboard);
+        }
     }
 
     public void OnEnable()
@@ -97,33 +132,41 @@ public class Manager : MonoBehaviour, IOnEventCallback
         }
     }
 
+    public override void OnLeftRoom()
+    {
+        base.OnLeftRoom();
+
+        SceneManager.LoadScene(mainmenu);
+    }
+
+
     #endregion
 
     #region Methods
 
     public void Spawn()
     {
+        
         Transform t_spawn = spawn_points[Random.Range(0, spawn_points.Length)];  //random spawn point
 
         if (PhotonNetwork.IsConnected)
         {
+            Debug.Log("spawn a player string!");
             PhotonNetwork.Instantiate(player_prefab_string, t_spawn.position, t_spawn.rotation);
         }
-        else
-        {
-            GameObject newPlayer = Instantiate(player_prefab, t_spawn.position, t_spawn.rotation) as GameObject;
-        }
+        // else
+        // {
+        //     Debug.Log("spawn a player!");
+        //     GameObject newPlayer = Instantiate(player_prefab, t_spawn.position, t_spawn.rotation) as GameObject;
+        // }
     }
 
-    private void InitializeUI ()
+    private void InitializeUI()
     {
-        // ui_mykills = GameObject.Find("HUD/Stats/Kills/Text").GetComponent<Text>();
-        // ui_mydeaths = GameObject.Find("HUD/Stats/Deaths/Text").GetComponent<Text>();
-        
         RefreshMyStats();
     }
 
-    private void RefreshMyStats ()
+    private void RefreshMyStats()
     {
         if (playerInfo.Count > myind)
         {
@@ -137,17 +180,163 @@ public class Manager : MonoBehaviour, IOnEventCallback
         }
     }
 
+    private void Leaderboard(Transform p_lb)
+    {
+        // clean up
+        for (int i = 2; i < p_lb.childCount; i++)
+        {
+            Destroy(p_lb.GetChild(i).gameObject);
+        }
+
+        // set details
+        p_lb.Find("Header/Mode").GetComponent<Text>().text = "FREE FOR ALL";
+        p_lb.Find("Header/Map").GetComponent<Text>().text = "Battlefield";
+
+        // cache prefab
+        GameObject playercard = p_lb.GetChild(1).gameObject;
+        playercard.SetActive(false);
+
+        // sort
+        List<PlayerInfo> sorted = SortPlayers(playerInfo);
+
+        // display
+        bool t_alternateColors = false;
+        foreach (PlayerInfo a in sorted)
+        {
+            GameObject newcard = Instantiate(playercard, p_lb) as GameObject;
+
+            if (t_alternateColors) newcard.GetComponent<Image>().color = new Color32(0, 0, 0, 180);
+            t_alternateColors = !t_alternateColors;
+
+            newcard.transform.Find("Level").GetComponent<Text>().text = a.profile.level.ToString("00");
+            newcard.transform.Find("Username").GetComponent<Text>().text = a.profile.username;
+            newcard.transform.Find("Score Value").GetComponent<Text>().text = (a.kills * 100).ToString();
+            newcard.transform.Find("Kills Value").GetComponent<Text>().text = a.kills.ToString();
+            newcard.transform.Find("Deaths Value").GetComponent<Text>().text = a.deaths.ToString();
+
+            newcard.SetActive(true);
+        }
+
+        // activate
+        p_lb.gameObject.SetActive(true);
+    }
+
+    private List<PlayerInfo> SortPlayers(List<PlayerInfo> p_info)
+    {
+        List<PlayerInfo> sorted = new List<PlayerInfo>();
+
+        while (sorted.Count < p_info.Count)
+        {
+            // set defaults
+            short highest = -1;
+            PlayerInfo selection = p_info[0];
+
+            // grab next highest player
+            foreach (PlayerInfo a in p_info)
+            {
+                if (sorted.Contains(a)) continue;
+                if (a.kills > highest)
+                {
+                    selection = a;
+                    highest = a.kills;
+                }
+            }
+
+            // add player
+            sorted.Add(selection);
+        }
+
+        return sorted;
+    }
+
     private void ValidateConnection()
     {
         if (PhotonNetwork.IsConnected) return;
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(mainmenu);
+    }
+
+    private void StateCheck()
+    {
+        if (state == GameState.Ending)
+        {
+            EndGame();
+        }
+    }
+
+    private void ScoreCheck()
+    {
+        // define temporary variables
+        bool detectwin = false;
+
+        // check to see if any player has met the win conditions
+        foreach (PlayerInfo a in playerInfo)
+        {
+            // free for all
+            if (a.kills >= killcount)
+            {
+                detectwin = true;
+                break;
+            }
+        }
+
+        // did we find a winner?
+        if (detectwin)
+        {
+            // are we the master client? is the game still going?
+            if (PhotonNetwork.IsMasterClient && state != GameState.Ending)
+            {
+                // if so, tell the other players that a winner has been detected
+                UpdatePlayers_S((int)GameState.Ending, playerInfo);
+            }
+        }
+    }
+
+    private void EndGame()
+    {
+        // set game state to ending
+        state = GameState.Ending;
+
+        // disable room
+        if (PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.DestroyAll();
+
+            if (!perpetual)
+            {
+                PhotonNetwork.CurrentRoom.IsVisible = false;
+                PhotonNetwork.CurrentRoom.IsOpen = false;
+            }
+        }
+
+        // activate map camera
+        mapcam.SetActive(true);
+
+        // show end game ui
+        ui_endgame.gameObject.SetActive(true);
+        Leaderboard(ui_endgame.Find("Leaderboard"));
+
+        // wait X seconds and then return to main menu
+        StartCoroutine(End(6f));
+    }
+
+    public void RemovePlayer()
+    {
+        for (int i = 0; i < playerInfo.Count; i++)
+        {
+            if (playerInfo[i].actor == PhotonNetwork.LocalPlayer.ActorNumber)
+            {
+                playerInfo.Remove(playerInfo[i]);
+                UpdatePlayers_S((int)state, playerInfo);
+                break;
+            }
+        }
     }
 
     #endregion
 
     #region Events
 
-    public void NewPlayer_S (ProfileData p)
+    public void NewPlayer_S(ProfileData p)
     {
         object[] package = new object[6];
 
@@ -155,8 +344,8 @@ public class Manager : MonoBehaviour, IOnEventCallback
         package[1] = p.level;
         package[2] = p.xp;
         package[3] = PhotonNetwork.LocalPlayer.ActorNumber;
-        package[4] = (short) 0;
-        package[5] = (short) 0;
+        package[4] = (short)0;
+        package[5] = (short)0;
 
         PhotonNetwork.RaiseEvent(
             (byte)EventCodes.NewPlayer,
@@ -166,7 +355,7 @@ public class Manager : MonoBehaviour, IOnEventCallback
         );
     }
 
-    public void NewPlayer_R (object[] data)
+    public void NewPlayer_R(object[] data)
     {
         PlayerInfo p = new PlayerInfo(
             new ProfileData(
@@ -181,13 +370,14 @@ public class Manager : MonoBehaviour, IOnEventCallback
 
         playerInfo.Add(p);
 
-        UpdatePlayers_S(playerInfo);
+        UpdatePlayers_S((int)state, playerInfo);
     }
 
-    public void UpdatePlayers_S (List<PlayerInfo> info)
+    public void UpdatePlayers_S(int state, List<PlayerInfo> info)
     {
-        object[] package = new object[info.Count];
+        object[] package = new object[info.Count + 1];
 
+        package[0] = state;
         for (int i = 0; i < info.Count; i++)
         {
             object[] piece = new object[6];
@@ -199,7 +389,7 @@ public class Manager : MonoBehaviour, IOnEventCallback
             piece[4] = info[i].kills;
             piece[5] = info[i].deaths;
 
-            package[i] = piece;
+            package[i + 1] = piece;
         }
 
         PhotonNetwork.RaiseEvent(
@@ -210,13 +400,14 @@ public class Manager : MonoBehaviour, IOnEventCallback
         );
     }
 
-    public void UpdatePlayers_R (object[] data)
+    public void UpdatePlayers_R(object[] data)
     {
+        state = (GameState)data[0];
         playerInfo = new List<PlayerInfo>();
 
-        for (int i = 0; i < data.Length; i++)
+        for (int i = 1; i < data.Length; i++)
         {
-            object[] extract = (object[]) data[i];
+            object[] extract = (object[])data[i];
 
             PlayerInfo p = new PlayerInfo(
                 new ProfileData(
@@ -233,12 +424,14 @@ public class Manager : MonoBehaviour, IOnEventCallback
 
             if (PhotonNetwork.LocalPlayer.ActorNumber == p.actor)
             {
-                myind = i;
+                myind = i - 1;
             }
-        }  
+        }
+
+        StateCheck();
     }
 
-    public void ChangeStat_S (int actor, byte stat, byte amt)
+    public void ChangeStat_S(int actor, byte stat, byte amt)
     {
         object[] package = new object[] { actor, stat, amt };
 
@@ -250,7 +443,7 @@ public class Manager : MonoBehaviour, IOnEventCallback
         );
     }
 
-    public void ChangeStat_R (object[] data)
+    public void ChangeStat_R(object[] data)
     {
         int actor = (int)data[0];
         byte stat = (byte)data[1];
@@ -260,7 +453,6 @@ public class Manager : MonoBehaviour, IOnEventCallback
         {
             if (playerInfo[i].actor == actor)
             {
-                Debug.Log("reach here!");
                 switch (stat)
                 {
                     case 0: //kills
@@ -274,10 +466,72 @@ public class Manager : MonoBehaviour, IOnEventCallback
                         break;
                 }
 
-                if(i == myind) RefreshMyStats();
+                if (i == myind) RefreshMyStats();
+                if (ui_leaderboard.gameObject.activeSelf) Leaderboard(ui_leaderboard);
 
-                return;
+                break;
             }
+        }
+
+        ScoreCheck();
+    }
+
+    public void NewMatch_S()
+    {
+        PhotonNetwork.RaiseEvent(
+            (byte)EventCodes.NewMatch,
+            null,
+            new RaiseEventOptions { Receivers = ReceiverGroup.All },
+            new SendOptions { Reliability = true }
+        );
+    }
+
+    public void NewMatch_R()
+    {
+        // set game state to waiting
+        state = GameState.Waiting;
+
+        // deactivate map camera
+        mapcam.SetActive(false);
+
+        // hide end game ui
+        ui_endgame.gameObject.SetActive(false);
+
+        // reset scores
+        foreach (PlayerInfo p in playerInfo)
+        {
+            p.kills = 0;
+            p.deaths = 0;
+        }
+
+        // reset ui
+        RefreshMyStats();
+
+        // spawn
+        Spawn();
+    }
+
+    #endregion
+
+    #region Coroutines
+
+    private IEnumerator End(float p_wait)
+    {
+        yield return new WaitForSeconds(p_wait);
+
+        if (perpetual)
+        {
+            // new match
+            if (PhotonNetwork.IsMasterClient)
+            {
+                NewMatch_S();
+            }
+        }
+        else
+        {
+            // disconnect
+            PhotonNetwork.AutomaticallySyncScene = false;
+            PhotonNetwork.LeaveRoom();
         }
     }
 

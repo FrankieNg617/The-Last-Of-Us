@@ -99,7 +99,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
         ExitGames.Client.Photon.Hashtable properties = new ExitGames.Client.Photon.Hashtable(); 
         properties.Add("map", 0);
-        options.CustomRoomProperties = properties; 
+        options.CustomRoomProperties = properties;
 
         PhotonNetwork.CreateRoom(roomnameField.text, options);
     }
@@ -162,6 +162,18 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public override void OnRoomListUpdate(List<RoomInfo> p_list)
     {
+        RoomListUpdate(p_list);
+
+        base.OnRoomListUpdate(roomList);
+    }
+
+    public void RefreshRoomList()
+    {
+        RoomListUpdate(roomList);
+    }
+
+    public void RoomListUpdate(List<RoomInfo> p_list)
+    {
         roomList = p_list;
         ClearRoomList();
 
@@ -169,6 +181,8 @@ public class Launcher : MonoBehaviourPunCallbacks
 
         foreach (RoomInfo a in roomList)
         {
+            if(a.PlayerCount == 0) continue;
+            
             GameObject newRoomButton = Instantiate(buttonRoom, content) as GameObject;
 
             newRoomButton.transform.Find("Name").GetComponent<Text>().text = a.Name;
@@ -181,8 +195,6 @@ public class Launcher : MonoBehaviourPunCallbacks
 
             newRoomButton.GetComponent<Button>().onClick.AddListener(delegate { JoinRoom(newRoomButton.transform); });
         }
-
-        base.OnRoomListUpdate(roomList);
     }
 
     public void JoinRoom (Transform p_button)
@@ -190,6 +202,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         string t_roomName = p_button.Find("Name").GetComponent<Text>().text;
 
         VerifyUsername();
+        Data.SaveProfile(myProfile);
         
         PhotonNetwork.JoinRoom(t_roomName);  
     }
