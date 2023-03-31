@@ -37,6 +37,7 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public int mainmenu = 0;
     public int killcount = 3;
+    public int matchLength = 180;
     public bool perpetual = false;
 
     public GameObject mapcam;
@@ -50,8 +51,12 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public Text ui_mykills;
     public Text ui_mydeaths;
+    public Text ui_timer;
     public Transform ui_leaderboard;
     public Transform ui_endgame;
+
+    private int currentMatchTime;
+    private Coroutine timerCoroutine;
 
     private GameState state = GameState.Waiting;
 
@@ -64,7 +69,8 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
         NewPlayer,
         UpdatePlayers,
         ChangeStat,
-        NewMatch
+        NewMatch,
+        RefreshTimer
     }
 
     #endregion
@@ -77,6 +83,7 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         ValidateConnection();
         InitializeUI();
+        InitializeTimer();
         NewPlayer_S(Launcher.myProfile);
         Spawn();
     }
@@ -129,6 +136,10 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
             case EventCodes.ChangeStat:
                 ChangeStat_R(o);
                 break;
+                
+            case EventCodes.RefreshTimer:
+                RefreshTimer_R(o);
+                break;
         }
     }
 
@@ -146,7 +157,7 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public void Spawn()
     {
-        
+
         Transform t_spawn = spawn_points[Random.Range(0, spawn_points.Length)];  //random spawn point
 
         if (PhotonNetwork.IsConnected)
@@ -291,10 +302,33 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
     }
 
+    private void InitializeTimer()
+    {
+        currentMatchTime = matchLength;
+        RefreshTimerUI();
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            timerCoroutine = StartCoroutine(Timer());
+        }
+    }
+
+    private void RefreshTimerUI()
+    {
+        string minutes = (currentMatchTime / 60).ToString("00");
+        string seconds = (currentMatchTime % 60).ToString("00");
+        ui_timer.text = $"{minutes}:{seconds}";
+    }
+
     private void EndGame()
     {
         // set game state to ending
         state = GameState.Ending;
+
+        // set timer to 0
+        if (timerCoroutine != null) StopCoroutine(timerCoroutine);
+        currentMatchTime = 0;
+        RefreshTimerUI();
 
         // disable room
         if (PhotonNetwork.IsMasterClient)
@@ -507,13 +541,52 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
         // reset ui
         RefreshMyStats();
 
+        // reinitialize time
+        InitializeTimer();
+
         // spawn
         Spawn();
+    }
+
+    public void RefreshTimer_S()
+    {
+        object[] package = new object[] { currentMatchTime };
+
+        PhotonNetwork.RaiseEvent(
+            (byte)EventCodes.RefreshTimer,
+            package,
+            new RaiseEventOptions { Receivers = ReceiverGroup.All },
+            new SendOptions { Reliability = true }
+        );
+    }
+
+    public void RefreshTimer_R(object[] data)
+    {
+        currentMatchTime = (int)data[0];
+        RefreshTimerUI();
     }
 
     #endregion
 
     #region Coroutines
+
+    private IEnumerator Timer()
+    {
+        yield return new WaitForSeconds(1f);
+
+        currentMatchTime -= 1;
+
+        if (currentMatchTime <= 0)
+        {
+            timerCoroutine = null;
+            UpdatePlayers_S((int)GameState.Ending, playerInfo);
+        }
+        else
+        {
+            RefreshTimer_S();
+            timerCoroutine = StartCoroutine(Timer());
+        }
+    }
 
     private IEnumerator End(float p_wait)
     {
