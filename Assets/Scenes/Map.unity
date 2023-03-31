@@ -2042,6 +2042,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -73
       objectReference: {fileID: 0}
+    - target: {fileID: 5877425304062270245, guid: 47ac7b2069924a9438926d2f474e1747, type: 3}
+      propertyPath: mapcam
+      value: 
+      objectReference: {fileID: 857034305}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 47ac7b2069924a9438926d2f474e1747, type: 3}
 --- !u!224 &451267485 stripped

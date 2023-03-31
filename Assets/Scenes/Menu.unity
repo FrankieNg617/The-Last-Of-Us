@@ -1073,12 +1073,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   usernameField: {fileID: 1665022900}
   roomnameField: {fileID: 1131909763699382783}
+  mapValue: {fileID: 1131909763951952685}
   maxPlayersSlider: {fileID: 1131909762729903083}
   maxPlayersValue: {fileID: 1131909762416580975}
   tabMain: {fileID: 43376086}
   tabRooms: {fileID: 765871075}
   tabCreate: {fileID: 1131909764313093093}
   buttonRoom: {fileID: 41906257588582656, guid: 09a719def6358714dbded5d1a81acaee, type: 3}
+  maps:
+  - name: Classic
+    scene: 1
+  - name: Cyberpunk
+    scene: 2
 --- !u!4 &533406418
 Transform:
   m_ObjectHideFlags: 0

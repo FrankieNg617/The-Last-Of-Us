@@ -27,11 +27,19 @@ public class ProfileData
     }
 }
 
+[System.Serializable]
+public class MapData
+{
+    public string name;
+    public int scene;
+}
+
 public class Launcher : MonoBehaviourPunCallbacks
 {
     public InputField usernameField;
     public InputField roomnameField;
-    public Slider maxPlayersSlider; 
+    public Text mapValue;
+    public Slider maxPlayersSlider;
     public Text maxPlayersValue;
     public static ProfileData myProfile = new ProfileData();
 
@@ -41,7 +49,10 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public GameObject buttonRoom;
 
-    private List<RoomInfo> roomList;
+    public MapData[] maps;
+    private int currentmap = 0;
+
+    private List<RoomInfo> roomList = new List<RoomInfo>();
 
 
     public void Awake()
@@ -56,7 +67,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     //will be called after connected to the server
     public override void OnConnectedToMaster()
-    {   
+    {
         Debug.Log("CONNECTED!");
 
         PhotonNetwork.JoinLobby();
@@ -87,7 +98,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     }
 
     public void Join()
-    {   
+    {
         SetUpClientProfile();
         PhotonNetwork.JoinRandomRoom();
     }
@@ -95,23 +106,25 @@ public class Launcher : MonoBehaviourPunCallbacks
     public void Create()
     {
         RoomOptions options = new RoomOptions();
-        options.MaxPlayers = (byte) maxPlayersSlider.value;
+        options.MaxPlayers = (byte)maxPlayersSlider.value;
 
-        ExitGames.Client.Photon.Hashtable properties = new ExitGames.Client.Photon.Hashtable(); 
-        properties.Add("map", 0);
+        options.CustomRoomPropertiesForLobby = new string[] { "map" };
+
+        ExitGames.Client.Photon.Hashtable properties = new ExitGames.Client.Photon.Hashtable();
+        properties.Add("map", currentmap);
         options.CustomRoomProperties = properties;
 
         PhotonNetwork.CreateRoom(roomnameField.text, options);
     }
 
-    public void ChangeMap ()
+    public void ChangeMap()
     {
-        // currentmap++;
-        // if (currentmap >= maps.Length) currentmap = 0;
-        // mapValue.text = "MAP: " + maps[currentmap].name.ToUpper();
+        currentmap++;
+        if (currentmap >= maps.Length) currentmap = 0;
+        mapValue.text = "MAP: " + maps[currentmap].name.ToUpper();
     }
 
-    public void ChangeMaxPlayersSlider (float t_value) 
+    public void ChangeMaxPlayersSlider(float t_value)
     {
         maxPlayersValue.text = Mathf.RoundToInt(t_value).ToString();
     }
@@ -123,32 +136,40 @@ public class Launcher : MonoBehaviourPunCallbacks
         tabCreate.SetActive(false);
     }
 
-    public void TabOpenMain ()
+    public void TabOpenMain()
     {
         TabCloseAll();
         tabMain.SetActive(true);
     }
 
-    public void TabOpenRooms ()
+    public void TabOpenRooms()
     {
         TabCloseAll();
         tabRooms.SetActive(true);
     }
 
-    public void TabOpenCreate ()
+    public void TabOpenCreate()
     {
         TabCloseAll();
         tabCreate.SetActive(true);
-    
+
+        roomnameField.text = "";
+
+        currentmap = 0;
+        mapValue.text = "MAP: " + maps[currentmap].name.ToUpper();
+
+        maxPlayersSlider.value = maxPlayersSlider.maxValue;
+        maxPlayersValue.text = Mathf.RoundToInt(maxPlayersSlider.value).ToString();
+
     }
 
-    private void ClearRoomList ()
+    private void ClearRoomList()
     {
         Transform content = tabRooms.transform.Find("Scroll View/Viewport/Content");
         foreach (Transform a in content) Destroy(a.gameObject);
     }
 
-    private void VerifyUsername ()
+    private void VerifyUsername()
     {
         if (string.IsNullOrEmpty(usernameField.text))
         {
@@ -162,49 +183,71 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public override void OnRoomListUpdate(List<RoomInfo> p_list)
     {
-        RoomListUpdate(p_list);
-
-        base.OnRoomListUpdate(roomList);
-    }
-
-    public void RefreshRoomList()
-    {
-        RoomListUpdate(roomList);
-    }
-
-    public void RoomListUpdate(List<RoomInfo> p_list)
-    {
-        roomList = p_list;
+        RoomListUpdate(p_list); 
         ClearRoomList();
 
         Transform content = tabRooms.transform.Find("Scroll View/Viewport/Content");
 
         foreach (RoomInfo a in roomList)
         {
-            if(a.PlayerCount == 0) continue;
-            
             GameObject newRoomButton = Instantiate(buttonRoom, content) as GameObject;
 
             newRoomButton.transform.Find("Name").GetComponent<Text>().text = a.Name;
             newRoomButton.transform.Find("Players").GetComponent<Text>().text = a.PlayerCount + " / " + a.MaxPlayers;
 
-            // if (a.CustomProperties.ContainsKey("map"))
-            //     newRoomButton.transform.Find("Map/Name").GetComponent<Text>().text = maps[(int)a.CustomProperties["map"]].name;
-            // else
-            //     newRoomButton.transform.Find("Map/Name").GetComponent<Text>().text = "-----";
+            if (a.CustomProperties.ContainsKey("map"))
+                newRoomButton.transform.Find("Map/Name").GetComponent<Text>().text = maps[(int)a.CustomProperties["map"]].name;
+            else
+                newRoomButton.transform.Find("Map/Name").GetComponent<Text>().text = "-----";
 
             newRoomButton.GetComponent<Button>().onClick.AddListener(delegate { JoinRoom(newRoomButton.transform); });
         }
+
+        base.OnRoomListUpdate(roomList);
     }
 
-    public void JoinRoom (Transform p_button)
+    private void RoomListUpdate(List<RoomInfo> p_list)
+    {
+        bool isExist;
+
+        for (int i = 0; i < p_list.Count; i++)
+        {
+            isExist = false;
+
+            for (int j = 0; j < roomList.Count; j++)
+            {
+                if (p_list[i].Name == roomList[j].Name)
+                {
+                    isExist = true;
+                    
+                    if (p_list[i].RemovedFromList || p_list[i].PlayerCount == 0)
+                    {
+                        roomList.Remove(roomList[j]);
+                    }
+                    else
+                    {
+                        roomList[j] = p_list[i];
+                    }
+
+                    break;
+                }
+            }
+
+            if (!isExist && p_list[i].PlayerCount != 0)
+            {
+                roomList.Add(p_list[i]);
+            }
+        }
+    }
+
+    public void JoinRoom(Transform p_button)
     {
         string t_roomName = p_button.Find("Name").GetComponent<Text>().text;
 
         VerifyUsername();
         Data.SaveProfile(myProfile);
-        
-        PhotonNetwork.JoinRoom(t_roomName);  
+
+        PhotonNetwork.JoinRoom(t_roomName);
     }
 
     public void SetUpClientProfile()
@@ -213,16 +256,16 @@ public class Launcher : MonoBehaviourPunCallbacks
 
         Data.SaveProfile(myProfile);
     }
-     
+
     public void StartGame()
-    {   
+    {
         VerifyUsername();
 
         //only the first player need to load the map
-        if(PhotonNetwork.CurrentRoom.PlayerCount == 1)
+        if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
         {
             Data.SaveProfile(myProfile);
-            PhotonNetwork.LoadLevel(1);
+            PhotonNetwork.LoadLevel(maps[currentmap].scene);
         }
     }
 }

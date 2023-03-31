@@ -4,8 +4,9 @@ using UnityEngine.SceneManagement;
 using Photon.Pun;
 using UnityEngine;
 
-public class Pause : MonoBehaviour
+public class Pause : MonoBehaviourPunCallbacks
 {
+    public GameObject mapcam;
     public static bool paused = false;
     private bool disconnecting = false;
     private Manager manager;
@@ -13,6 +14,12 @@ public class Pause : MonoBehaviour
     private void Start()
     {
         manager = GameObject.Find("Manager").GetComponent<Manager>();;
+    }
+
+    public override void OnLeftRoom()
+    {
+        SceneManager.LoadScene(0);
+        base.OnLeftRoom();
     }
     
     public void TogglePause()
@@ -30,8 +37,11 @@ public class Pause : MonoBehaviour
     {
         disconnecting = true;
         manager.RemovePlayer();
-        PhotonNetwork.LeaveRoom();
-        SceneManager.LoadScene(0);
+
+        // activate map camera
+        mapcam.SetActive(true);
+
+        PhotonNetwork.LeaveRoom(); 
     }
 
 }
