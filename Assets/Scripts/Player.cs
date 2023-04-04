@@ -552,7 +552,9 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
             if (current_health <= 0)
             {
+                photonView.RPC("DieVFX", RpcTarget.AllBuffered);
                 PhotonNetwork.Destroy(gameObject);
+                
                 manager.Spawn();
 
                 manager.ChangeStat_S(PhotonNetwork.LocalPlayer.ActorNumber, 1, 1);

@@ -293,6 +293,9 @@ public class Weapon : MonoBehaviourPunCallbacks
                             hitmarkerImage.color = Color.white;
                             sfx.PlayOneShot(hitmarkerSound);
                             hitmarkerWait = 1f;
+
+                            //shoe blood effect
+                            photonView.RPC("BloodVFX", RpcTarget.AllBuffered, t_hit.point + t_hit.normal * 0.001f);
                         }
                     }
 

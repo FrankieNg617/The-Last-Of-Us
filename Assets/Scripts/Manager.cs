@@ -38,8 +38,6 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
     #region Fields
 
     public int mainmenu = 0;
-    public int killcount = 3;
-    public int matchLength = 180;
     public bool perpetual = false;
 
     public GameObject mapcam;
@@ -56,6 +54,9 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
     public Text ui_timer;
     public Transform ui_leaderboard;
     public Transform ui_endgame;
+
+    private int killcount;
+    private int matchLength;
 
     private int currentMatchTime;
     private Coroutine timerCoroutine;
@@ -83,6 +84,9 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     private void Start()
     {
+        killcount = Launcher.killsGoal;
+        matchLength = Launcher.times * 60;
+
         mapcam.SetActive(false);
 
         ValidateConnection();

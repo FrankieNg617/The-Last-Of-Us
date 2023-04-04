@@ -50,6 +50,8 @@ MonoBehaviour:
   - SpawnWeapon
   - SyncProfile
   - SyncTeam
+  - DieVFX
+  - BloodVFX
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

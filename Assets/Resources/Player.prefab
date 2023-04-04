@@ -294,6 +294,7 @@ GameObject:
   - component: {fileID: 4771682388271970075}
   - component: {fileID: 8838049473491647024}
   - component: {fileID: 7857825315053404411}
+  - component: {fileID: 4946653989159399131}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -509,6 +510,20 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &4946653989159399131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3154256828308551022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7788bd7875f440b498931cc7a42866c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dieVFX: {fileID: 7821426904767505206, guid: ff5dfd640a615a14fa1e65abc4256389, type: 3}
+  bloodVFX: {fileID: 7821426904767505206, guid: 1a04c63eb36f11445961f84fc9ebf9e9, type: 3}
 --- !u!1 &3154256828454588969
 GameObject:
   m_ObjectHideFlags: 0
@@ -913,7 +928,7 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.38
+  m_Radius: 0.26
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}

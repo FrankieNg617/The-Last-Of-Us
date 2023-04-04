@@ -43,8 +43,14 @@ public class Launcher : MonoBehaviourPunCallbacks
     public Text mapValue;
     public Text modeValue;
     public Slider maxPlayersSlider;
+    public Slider killsGoalSlider;
+    public Slider timesSlider;
     public Text maxPlayersValue;
+    public Text killsGoalValue;
+    public Text timesValue;
     public static ProfileData myProfile = new ProfileData();
+    public static int killsGoal = 0;
+    public static int times = 0;
 
     public GameObject tabMain;
     public GameObject tabRooms;
@@ -120,6 +126,9 @@ public class Launcher : MonoBehaviourPunCallbacks
         properties.Add("mode", (int)GameSettings.GameMode);
         options.CustomRoomProperties = properties;
 
+        killsGoal = (int) killsGoalSlider.value;
+        times = (int) timesSlider.value;
+
         PhotonNetwork.CreateRoom(roomnameField.text, options);
     }
 
@@ -141,6 +150,16 @@ public class Launcher : MonoBehaviourPunCallbacks
     public void ChangeMaxPlayersSlider(float t_value)
     {
         maxPlayersValue.text = Mathf.RoundToInt(t_value).ToString();
+    }
+
+    public void ChangeKillsGoalSlider(float t_value)
+    {
+        killsGoalValue.text = Mathf.RoundToInt(t_value).ToString();
+    }
+
+    public void ChangeTimesSlider(float t_value)
+    {
+        timesValue.text = Mathf.RoundToInt(t_value).ToString();
     }
 
     public void TabCloseAll()
@@ -176,8 +195,12 @@ public class Launcher : MonoBehaviourPunCallbacks
         modeValue.text = "MODE: " + System.Enum.GetName(typeof(GameMode), (GameMode)0);
 
         maxPlayersSlider.value = maxPlayersSlider.maxValue;
-        maxPlayersValue.text = Mathf.RoundToInt(maxPlayersSlider.value).ToString();
+        killsGoalSlider.value = killsGoalSlider.maxValue;
+        timesSlider.value = timesSlider.maxValue;
 
+        maxPlayersValue.text = Mathf.RoundToInt(maxPlayersSlider.value).ToString();
+        killsGoalValue.text = Mathf.RoundToInt(killsGoalSlider.value).ToString();
+        timesValue.text = Mathf.RoundToInt(timesSlider.value).ToString();
     }
 
     private void ClearRoomList()

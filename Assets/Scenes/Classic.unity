@@ -5566,7 +5566,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mainmenu: 0
-  killcount: 1
+  killcount: 3
   matchLength: 180
   perpetual: 0
   mapcam: {fileID: 857034305}
