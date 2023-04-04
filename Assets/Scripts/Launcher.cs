@@ -38,7 +38,10 @@ public class Launcher : MonoBehaviourPunCallbacks
 {
     public InputField usernameField;
     public InputField roomnameField;
+    public Text levelValue;
+    public Text xpValue;
     public Text mapValue;
+    public Text modeValue;
     public Slider maxPlayersSlider;
     public Text maxPlayersValue;
     public static ProfileData myProfile = new ProfileData();
@@ -61,6 +64,8 @@ public class Launcher : MonoBehaviourPunCallbacks
 
         myProfile = Data.LoadProfile();
         usernameField.text = myProfile.username;
+        levelValue.text = $"LEVEL {myProfile.level}";
+        xpValue.text = $"XP {myProfile.xp} / 60";
 
         Connect();
     }
@@ -108,10 +113,11 @@ public class Launcher : MonoBehaviourPunCallbacks
         RoomOptions options = new RoomOptions();
         options.MaxPlayers = (byte)maxPlayersSlider.value;
 
-        options.CustomRoomPropertiesForLobby = new string[] { "map" };
+        options.CustomRoomPropertiesForLobby = new string[] { "map", "mode" };
 
         ExitGames.Client.Photon.Hashtable properties = new ExitGames.Client.Photon.Hashtable();
         properties.Add("map", currentmap);
+        properties.Add("mode", (int)GameSettings.GameMode);
         options.CustomRoomProperties = properties;
 
         PhotonNetwork.CreateRoom(roomnameField.text, options);
@@ -122,6 +128,14 @@ public class Launcher : MonoBehaviourPunCallbacks
         currentmap++;
         if (currentmap >= maps.Length) currentmap = 0;
         mapValue.text = "MAP: " + maps[currentmap].name.ToUpper();
+    }
+
+    public void ChangeMode()
+    {
+        int newMode = (int)GameSettings.GameMode + 1;
+        if (newMode >= System.Enum.GetValues(typeof(GameMode)).Length) newMode = 0;
+        GameSettings.GameMode = (GameMode)newMode;
+        modeValue.text = "MODE: " + System.Enum.GetName(typeof(GameMode), newMode);
     }
 
     public void ChangeMaxPlayersSlider(float t_value)
@@ -158,6 +172,9 @@ public class Launcher : MonoBehaviourPunCallbacks
         currentmap = 0;
         mapValue.text = "MAP: " + maps[currentmap].name.ToUpper();
 
+        GameSettings.GameMode = (GameMode)0;
+        modeValue.text = "MODE: " + System.Enum.GetName(typeof(GameMode), (GameMode)0);
+
         maxPlayersSlider.value = maxPlayersSlider.maxValue;
         maxPlayersValue.text = Mathf.RoundToInt(maxPlayersSlider.value).ToString();
 
@@ -173,7 +190,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         if (string.IsNullOrEmpty(usernameField.text))
         {
-            myProfile.username = "USER" + Random.Range(100, 1000);
+            myProfile.username = "CYY" + Random.Range(100, 1000);
         }
         else
         {
@@ -183,7 +200,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public override void OnRoomListUpdate(List<RoomInfo> p_list)
     {
-        RoomListUpdate(p_list); 
+        RoomListUpdate(p_list);
         ClearRoomList();
 
         Transform content = tabRooms.transform.Find("Scroll View/Viewport/Content");
@@ -219,7 +236,7 @@ public class Launcher : MonoBehaviourPunCallbacks
                 if (p_list[i].Name == roomList[j].Name)
                 {
                     isExist = true;
-                    
+
                     if (p_list[i].RemovedFromList || p_list[i].PlayerCount == 0)
                     {
                         roomList.Remove(roomList[j]);
@@ -247,7 +264,27 @@ public class Launcher : MonoBehaviourPunCallbacks
         VerifyUsername();
         Data.SaveProfile(myProfile);
 
-        PhotonNetwork.JoinRoom(t_roomName);
+        RoomInfo roomInfo = null;
+        Transform buttonParent = p_button.parent;
+        for (int i = 0; i < buttonParent.childCount; i++)
+        {
+            if (buttonParent.GetChild(i).Equals(p_button))
+            {
+                roomInfo = roomList[i];
+                break;
+            }
+        }
+
+        if (roomInfo != null)
+        {
+            LoadGameSettings(roomInfo);
+            PhotonNetwork.JoinRoom(t_roomName);
+        }
+    }
+
+    public void LoadGameSettings(RoomInfo roomInfo)
+    {
+        GameSettings.GameMode = (GameMode)roomInfo.CustomProperties["mode"];
     }
 
     public void SetUpClientProfile()

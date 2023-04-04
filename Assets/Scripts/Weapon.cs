@@ -41,15 +41,18 @@ public class Weapon : MonoBehaviourPunCallbacks
         hitmarkerImage = GameObject.Find("HUD/Hitmarker/Image").GetComponent<Image>();
         hitmarkerImage.color = CLEARWHITE;
 
-        Equip(0);
+        if(photonView.IsMine) 
+        {
+            photonView.RPC("Equip", RpcTarget.AllBuffered, 0);
+        }
     }
 
     void Update()
     {
         if (Pause.paused && photonView.IsMine) return;
 
-        if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha1)) { photonView.RPC("Equip", RpcTarget.All, 0); }
-        if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha2)) { photonView.RPC("Equip", RpcTarget.All, 1); }
+        if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha1)) { photonView.RPC("Equip", RpcTarget.AllBuffered, 0); }
+        if (photonView.IsMine && Input.GetKeyDown(KeyCode.Alpha2)) { photonView.RPC("Equip", RpcTarget.AllBuffered, 1); }
 
         if (currentWeapon != null)
         {
@@ -250,7 +253,6 @@ public class Weapon : MonoBehaviourPunCallbacks
             t_bloom.Normalize();
 
         
-
             //raycast
             RaycastHit t_hit = new RaycastHit();
             if (Physics.Raycast(t_spawn.position, t_bloom, out t_hit, 1000f, canBeShot))
@@ -267,13 +269,31 @@ public class Weapon : MonoBehaviourPunCallbacks
                     //shooting other player on network
                     if (t_hit.collider.gameObject.layer == 11)
                     {
-                        //give damage
-                        t_hit.collider.transform.root.gameObject.GetPhotonView().RPC("TakeDamage", RpcTarget.All, loadout[currentIndex].damage, PhotonNetwork.LocalPlayer.ActorNumber);
+                        bool applyDamage = false;
 
-                        //show hitmarker
-                        hitmarkerImage.color = Color.white;
-                        sfx.PlayOneShot(hitmarkerSound);
-                        hitmarkerWait = 1f;
+                        if (GameSettings.GameMode == GameMode.FFA)
+                        {
+                            applyDamage = true;
+                        }
+
+                        if (GameSettings.GameMode == GameMode.TDM)
+                        {
+                            if (t_hit.collider.transform.root.gameObject.GetComponent<Player>().awayTeam != GameSettings.IsAwayTeam)
+                            {
+                                applyDamage = true;
+                            }
+                        }
+
+                        if (applyDamage)
+                        {
+                            //give damage
+                            t_hit.collider.transform.root.gameObject.GetPhotonView().RPC("TakeDamage", RpcTarget.All, loadout[currentIndex].damage, PhotonNetwork.LocalPlayer.ActorNumber);
+
+                            //show hitmarker
+                            hitmarkerImage.color = Color.white;
+                            sfx.PlayOneShot(hitmarkerSound);
+                            hitmarkerWait = 1f;
+                        }
                     }
 
                     //shooting target

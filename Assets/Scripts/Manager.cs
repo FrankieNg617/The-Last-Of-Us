@@ -13,13 +13,15 @@ public class PlayerInfo
     public int actor;
     public short kills;
     public short deaths;
+    public bool awayTeam;
 
-    public PlayerInfo(ProfileData p, int a, short k, short d)
+    public PlayerInfo(ProfileData p, int a, short k, short d, bool t)
     {
         this.profile = p;
         this.actor = a;
         this.kills = k;
         this.deaths = d;
+        this.awayTeam = t;
     }
 }
 
@@ -58,6 +60,8 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
     private int currentMatchTime;
     private Coroutine timerCoroutine;
 
+    private bool playerAdded;
+
     private GameState state = GameState.Waiting;
 
     #endregion
@@ -85,7 +89,12 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
         InitializeUI();
         InitializeTimer();
         NewPlayer_S(Launcher.myProfile);
-        Spawn();
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            playerAdded = true;
+            Spawn();
+        }
     }
 
     private void Update()
@@ -136,7 +145,7 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
             case EventCodes.ChangeStat:
                 ChangeStat_R(o);
                 break;
-                
+
             case EventCodes.RefreshTimer:
                 RefreshTimer_R(o);
                 break;
@@ -162,14 +171,12 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         if (PhotonNetwork.IsConnected)
         {
-            Debug.Log("spawn a player string!");
             PhotonNetwork.Instantiate(player_prefab_string, t_spawn.position, t_spawn.rotation);
         }
-        // else
-        // {
-        //     Debug.Log("spawn a player!");
-        //     GameObject newPlayer = Instantiate(player_prefab, t_spawn.position, t_spawn.rotation) as GameObject;
-        // }
+        else
+        {
+            GameObject newPlayer = Instantiate(player_prefab, t_spawn.position, t_spawn.rotation) as GameObject;
+        }
     }
 
     private void InitializeUI()
@@ -193,6 +200,10 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     private void Leaderboard(Transform p_lb)
     {
+        // specify leaderboard
+        if (GameSettings.GameMode == GameMode.FFA) p_lb = p_lb.Find("FFA");
+        if (GameSettings.GameMode == GameMode.TDM) p_lb = p_lb.Find("TDM");
+
         // clean up
         for (int i = 2; i < p_lb.childCount; i++)
         {
@@ -200,8 +211,15 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
 
         // set details
-        p_lb.Find("Header/Mode").GetComponent<Text>().text = "FREE FOR ALL";
-        p_lb.Find("Header/Map").GetComponent<Text>().text = "Battlefield";
+        p_lb.Find("Header/Mode").GetComponent<Text>().text = System.Enum.GetName(typeof(GameMode), GameSettings.GameMode);
+        p_lb.Find("Header/Map").GetComponent<Text>().text = SceneManager.GetActiveScene().name;
+
+        // set scores
+        if (GameSettings.GameMode == GameMode.TDM)
+        {
+            p_lb.Find("Header/Score/Home").GetComponent<Text>().text = TotalScore(false).ToString();
+            p_lb.Find("Header/Score/Away").GetComponent<Text>().text = TotalScore(true).ToString();
+        }
 
         // cache prefab
         GameObject playercard = p_lb.GetChild(1).gameObject;
@@ -215,6 +233,12 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
         foreach (PlayerInfo a in sorted)
         {
             GameObject newcard = Instantiate(playercard, p_lb) as GameObject;
+
+            if (GameSettings.GameMode == GameMode.TDM)
+            {
+                newcard.transform.Find("Home").gameObject.SetActive(!a.awayTeam);
+                newcard.transform.Find("Away").gameObject.SetActive(a.awayTeam);
+            }
 
             if (t_alternateColors) newcard.GetComponent<Image>().color = new Color32(0, 0, 0, 180);
             t_alternateColors = !t_alternateColors;
@@ -230,31 +254,116 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         // activate
         p_lb.gameObject.SetActive(true);
+        p_lb.parent.gameObject.SetActive(true);
+    }
+
+    private int TotalScore(bool isAway)
+    {
+        int totalScore = 0;
+
+        foreach (PlayerInfo a in playerInfo)
+        {
+            if (isAway)
+            {
+                if (a.awayTeam) totalScore += a.kills;
+            }
+            else
+            {
+                if (!a.awayTeam) totalScore += a.kills;
+            }
+        }
+
+        return totalScore;
     }
 
     private List<PlayerInfo> SortPlayers(List<PlayerInfo> p_info)
     {
         List<PlayerInfo> sorted = new List<PlayerInfo>();
 
-        while (sorted.Count < p_info.Count)
+        if (GameSettings.GameMode == GameMode.FFA)
         {
-            // set defaults
-            short highest = -1;
-            PlayerInfo selection = p_info[0];
-
-            // grab next highest player
-            foreach (PlayerInfo a in p_info)
+            while (sorted.Count < p_info.Count)
             {
-                if (sorted.Contains(a)) continue;
-                if (a.kills > highest)
+                // set defaults
+                short highest = -1;
+                PlayerInfo selection = p_info[0];
+
+                // grab next highest player
+                foreach (PlayerInfo a in p_info)
                 {
-                    selection = a;
-                    highest = a.kills;
+                    if (sorted.Contains(a)) continue;
+                    if (a.kills > highest)
+                    {
+                        selection = a;
+                        highest = a.kills;
+                    }
                 }
+
+                // add player
+                sorted.Add(selection);
+            }
+        }
+
+        if (GameSettings.GameMode == GameMode.TDM)
+        {
+            List<PlayerInfo> homeSorted = new List<PlayerInfo>();
+            List<PlayerInfo> awaySorted = new List<PlayerInfo>();
+
+            int homeSize = 0;
+            int awaySize = 0;
+
+            foreach (PlayerInfo p in p_info)
+            {
+                if (p.awayTeam) awaySize++;
+                else homeSize++;
             }
 
-            // add player
-            sorted.Add(selection);
+            while (homeSorted.Count < homeSize)
+            {
+                // set defaults
+                short highest = -1;
+                PlayerInfo selection = p_info[0];
+
+                // grab next highest player
+                foreach (PlayerInfo a in p_info)
+                {
+                    if (a.awayTeam) continue;
+                    if (homeSorted.Contains(a)) continue;
+                    if (a.kills > highest)
+                    {
+                        selection = a;
+                        highest = a.kills;
+                    }
+                }
+
+                // add player
+                homeSorted.Add(selection);
+            }
+
+            while (awaySorted.Count < awaySize)
+            {
+                // set defaults
+                short highest = -1;
+                PlayerInfo selection = p_info[0];
+
+                // grab next highest player
+                foreach (PlayerInfo a in p_info)
+                {
+                    if (!a.awayTeam) continue;
+                    if (awaySorted.Contains(a)) continue;
+                    if (a.kills > highest)
+                    {
+                        selection = a;
+                        highest = a.kills;
+                    }
+                }
+
+                // add player
+                awaySorted.Add(selection);
+            }
+
+            sorted.AddRange(homeSorted);
+            sorted.AddRange(awaySorted);
         }
 
         return sorted;
@@ -280,15 +389,32 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
         bool detectwin = false;
 
         // check to see if any player has met the win conditions
-        foreach (PlayerInfo a in playerInfo)
+        if (GameSettings.GameMode == GameMode.FFA)
         {
-            // free for all
-            if (a.kills >= killcount)
+            foreach (PlayerInfo a in playerInfo)
             {
-                detectwin = true;
-                break;
+                if (a.kills >= killcount)
+                {
+                    detectwin = true;
+                    break;
+                }
             }
         }
+
+        if(GameSettings.GameMode == GameMode.TDM)
+        {
+            int homeScore = 0;
+            int awayScore = 0;
+
+            foreach (PlayerInfo a in playerInfo)
+            {
+                if (a.awayTeam) awayScore += a.kills;
+                else homeScore += a.kills;
+            }
+
+            if (homeScore >= killcount || awayScore >= killcount) detectwin = true;
+        }
+
 
         // did we find a winner?
         if (detectwin)
@@ -349,6 +475,9 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
         ui_endgame.gameObject.SetActive(true);
         Leaderboard(ui_endgame.Find("Leaderboard"));
 
+        //calculate the xp and level
+        CalculateXPnLevel();
+
         // wait X seconds and then return to main menu
         StartCoroutine(End(6f));
     }
@@ -366,13 +495,31 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
     }
 
+    private void CalculateXPnLevel()
+    {
+        foreach (PlayerInfo a in playerInfo)
+        {
+            if (a.actor == PhotonNetwork.LocalPlayer.ActorNumber)
+            {
+                a.profile.level += (a.kills * 10 + a.profile.xp) / 60;
+                a.profile.xp = (a.kills * 10 + a.profile.xp) % 60;
+                Data.SaveProfile(a.profile);
+            }
+        }
+    }
+
+    private bool CalculateTeam()
+    {
+        return PhotonNetwork.CurrentRoom.PlayerCount % 2 == 0;
+    }
+
     #endregion
 
     #region Events
 
     public void NewPlayer_S(ProfileData p)
     {
-        object[] package = new object[6];
+        object[] package = new object[7];
 
         package[0] = p.username;
         package[1] = p.level;
@@ -380,6 +527,7 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
         package[3] = PhotonNetwork.LocalPlayer.ActorNumber;
         package[4] = (short)0;
         package[5] = (short)0;
+        package[6] = CalculateTeam();
 
         PhotonNetwork.RaiseEvent(
             (byte)EventCodes.NewPlayer,
@@ -399,7 +547,8 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
             ),
             (int)data[3],
             (short)data[4],
-            (short)data[5]
+            (short)data[5],
+            (bool)data[6]
         );
 
         playerInfo.Add(p);
@@ -414,7 +563,7 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
         package[0] = state;
         for (int i = 0; i < info.Count; i++)
         {
-            object[] piece = new object[6];
+            object[] piece = new object[7];
 
             piece[0] = info[i].profile.username;
             piece[1] = info[i].profile.level;
@@ -422,6 +571,7 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
             piece[3] = info[i].actor;
             piece[4] = info[i].kills;
             piece[5] = info[i].deaths;
+            piece[6] = info[i].awayTeam;
 
             package[i + 1] = piece;
         }
@@ -451,7 +601,8 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
                 ),
                 (int)extract[3],
                 (short)extract[4],
-                (short)extract[5]
+                (short)extract[5],
+                (bool)extract[6]
             );
 
             playerInfo.Add(p);
@@ -459,6 +610,14 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
             if (PhotonNetwork.LocalPlayer.ActorNumber == p.actor)
             {
                 myind = i - 1;
+
+                //if we have been waiting to be added to the game then spawn us in
+                if (!playerAdded)
+                {
+                    playerAdded = true;
+                    GameSettings.IsAwayTeam = p.awayTeam;
+                    Spawn();
+                }
             }
         }
 
@@ -491,12 +650,10 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
                 {
                     case 0: //kills
                         playerInfo[i].kills += amt;
-                        Debug.Log($"Player {playerInfo[i].profile.username} : kills = {playerInfo[i].kills}");
                         break;
 
                     case 1: //deaths
                         playerInfo[i].deaths += amt;
-                        Debug.Log($"Player {playerInfo[i].profile.username} : deaths = {playerInfo[i].deaths}");
                         break;
                 }
 

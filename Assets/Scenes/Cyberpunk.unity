@@ -4467,7 +4467,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 857034305}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &857034307
 Camera:
   m_ObjectHideFlags: 0
@@ -5567,7 +5567,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainmenu: 0
   killcount: 3
-  matchLength: 10
+  matchLength: 180
   perpetual: 0
   mapcam: {fileID: 857034305}
   player_prefab_string: Player

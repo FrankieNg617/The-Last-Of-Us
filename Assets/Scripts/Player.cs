@@ -28,6 +28,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     public LayerMask ground;
 
     [HideInInspector] public ProfileData playerProfile;
+    [HideInInspector] public bool awayTeam;
     public TextMeshPro playerUsername;
 
     public float slideAmount;
@@ -36,12 +37,13 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     public GameObject crouchingCollider;
     public GameObject mesh;
 
-    private GameObject playerBody;
+    public Renderer[] teamIndicators;
 
     private Transform ui_healthbar;
     private Transform ui_fuelbar;
     private Text ui_ammo;
     private Text ui_username;
+    private Text ui_team;
 
     private Rigidbody rig;
 
@@ -83,17 +85,17 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
     #region Photon Callbacks
 
-        public void OnPhotonSerializeView(PhotonStream p_stream, PhotonMessageInfo p_message)
+    public void OnPhotonSerializeView(PhotonStream p_stream, PhotonMessageInfo p_message)
+    {
+        if (p_stream.IsWriting)
         {
-            if (p_stream.IsWriting)
-            {
-                p_stream.SendNext((int)(weaponParent.transform.localEulerAngles.x * 100f));
-            }
-            else
-            {
-                aimAngle = (int)p_stream.ReceiveNext() / 100f;
-            }
+            p_stream.SendNext((int)(weaponParent.transform.localEulerAngles.x * 100f));
         }
+        else
+        {
+            aimAngle = (int)p_stream.ReceiveNext() / 100f;
+        }
+    }
 
     #endregion
 
@@ -131,22 +133,48 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             ui_fuelbar = GameObject.Find("HUD/Fuel/Bar").transform;
             ui_ammo = GameObject.Find("HUD/Ammo/Text").GetComponent<Text>();
             ui_username = GameObject.Find("HUD/Username/Text").GetComponent<Text>();
+            ui_team = GameObject.Find("HUD/Team/Text").GetComponent<Text>();
 
             RefreshHealthBar();
             ui_username.text = Launcher.myProfile.username;
 
             photonView.RPC("SyncProfile", RpcTarget.AllBuffered, Launcher.myProfile.username, Launcher.myProfile.level, Launcher.myProfile.xp);
 
+            if (GameSettings.GameMode == GameMode.TDM)
+            {
+                photonView.RPC("SyncTeam", RpcTarget.AllBuffered, GameSettings.IsAwayTeam);
+
+                if (GameSettings.IsAwayTeam)
+                {
+                    ui_team.text = "red team";
+                    ui_team.color = Color.red;
+                }
+                else
+                {
+                    ui_team.text = "blue team";
+                    ui_team.color = Color.blue;
+                }
+            }
+            else
+            {
+                ui_team.gameObject.SetActive(false);
+            }
+
             anim = GetComponent<Animator>();
         }
         else
         {
-            GetComponent<Rigidbody>().isKinematic = true; 
+            GetComponent<Rigidbody>().isKinematic = true;
         }
     }
 
+    private void ColorTeamIndicators(Color p_color)
+    {
+        foreach (Renderer renderer in teamIndicators) renderer.material.color = p_color;
+    }
+
     private void ChangeLayerRecursively(Transform p_trans, int p_layer)
-    {   
+    {
         p_trans.gameObject.layer = p_layer;
         foreach (Transform t in p_trans) ChangeLayerRecursively(t, p_layer);
     }
@@ -157,7 +185,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         {
             RefreshMultiplayerState();
             return;
-        } 
+        }
 
         //Axis
         float t_hmove = Input.GetAxisRaw("Horizontal");
@@ -176,11 +204,11 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         bool isGrounded = Physics.Raycast(groundDetector.position, Vector3.down, 0.15f, ground);
         bool isJumping = jump && isGrounded;
         bool isSprinting = sprint && t_vmove > 0 && !isJumping && isGrounded;
-        bool isCrouching = crouch && !isSprinting && !isJumping &&  isGrounded;
+        bool isCrouching = crouch && !isSprinting && !isJumping && isGrounded;
 
 
         //Pause
-        if(pause)
+        if (pause)
         {
             GameObject.Find("Pause").GetComponent<Pause>().TogglePause();
         }
@@ -210,7 +238,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         //Jumping
         if (isJumping)
         {
-            if(crouched) photonView.RPC("SetCrouch", RpcTarget.All, false);
+            if (crouched) photonView.RPC("SetCrouch", RpcTarget.All, false);
             rig.AddForce(Vector3.up * jumpForce);
             current_recovery = 0f;
         }
@@ -228,7 +256,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             current_fuel = Mathf.Max(0, current_fuel - Time.deltaTime);
         }
 
-        if(isGrounded)
+        if (isGrounded)
         {
             if (current_recovery < jetWait)
                 current_recovery = Mathf.Min(jetWait, current_recovery + Time.deltaTime);
@@ -267,7 +295,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             movementCounter += Time.deltaTime * 6f;
             weaponParent.localPosition = Vector3.MoveTowards(weaponParent.localPosition, targetWeaponBobPosition, Time.deltaTime * 6f * 0.2f);
         }
-        else if(crouched)
+        else if (crouched)
         {
             //crouching
             HeadBob(movementCounter, 0.02f, 0.02f);
@@ -345,7 +373,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             else if (crouched)
             {
                 t_adjustedSpeed *= crouchModifier;
-            } 
+            }
         }
         else
         {
@@ -458,7 +486,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     void HeadBob(float p_z, float p_x_intensity, float p_y_intensity)
     {
         float t_aim_adjust = 1f;
-        if(isAiming) t_aim_adjust = 0.1f;
+        if (isAiming) t_aim_adjust = 0.1f;
         targetWeaponBobPosition = weaponParentCurrentPos + new Vector3(Mathf.Cos(p_z) * p_x_intensity * t_aim_adjust, Mathf.Sin(p_z * 2) * p_y_intensity * t_aim_adjust, 0);
     }
 
@@ -473,6 +501,21 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     {
         playerProfile = new ProfileData(p_usrname, p_level, p_xp);
         playerUsername.text = playerProfile.username;
+    }
+
+    [PunRPC]
+    private void SyncTeam(bool p_awayTeam)
+    {
+        awayTeam = p_awayTeam;
+
+        if (awayTeam)
+        {
+            ColorTeamIndicators(Color.red);
+        }
+        else
+        {
+            ColorTeamIndicators(Color.blue);
+        }
     }
 
     [PunRPC]
@@ -509,12 +552,12 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
             if (current_health <= 0)
             {
+                PhotonNetwork.Destroy(gameObject);
                 manager.Spawn();
+
                 manager.ChangeStat_S(PhotonNetwork.LocalPlayer.ActorNumber, 1, 1);
 
                 if (p_actor >= 0) manager.ChangeStat_S(p_actor, 0, 1);
-
-                PhotonNetwork.Destroy(gameObject);
             }
         }
     }
