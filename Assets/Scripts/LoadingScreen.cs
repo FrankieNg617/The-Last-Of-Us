@@ -31,7 +31,7 @@ public class LoadingScreen : MonoBehaviour
             if (loadingScreen.alpha < 1)
             {
                 loadingScreen.alpha += Time.deltaTime;
-                mainMenu.alpha -= Time.deltaTime * 1.3f;
+                mainMenu.alpha -= Time.deltaTime * 2f;
                 if (loadingScreen.alpha >= 1)
                 {
                     fadeIn = false;

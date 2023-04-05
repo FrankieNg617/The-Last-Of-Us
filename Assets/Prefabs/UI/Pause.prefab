@@ -195,6 +195,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4438b3e87ddedda409c990c2cec3f178, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mapcam: {fileID: 0}
 --- !u!1 &3278478256688769809
 GameObject:
   m_ObjectHideFlags: 0

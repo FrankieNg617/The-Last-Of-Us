@@ -57,6 +57,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     public GameObject tabCreate;
 
     public GameObject buttonRoom;
+    public GameObject gameTitle;
 
     public MapData[] maps;
     private int currentmap = 0;
@@ -176,17 +177,20 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         TabCloseAll();
         tabMain.SetActive(true);
+        gameTitle.SetActive(true);
     }
 
     public void TabOpenRooms()
     {
         TabCloseAll();
+        gameTitle.SetActive(false);
         tabRooms.SetActive(true);
     }
 
     public void TabOpenCreate()
     {
         TabCloseAll();
+        gameTitle.SetActive(false);
         tabCreate.SetActive(true);
 
         roomnameField.text = "";
