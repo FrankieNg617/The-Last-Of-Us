@@ -48,7 +48,7 @@ public class Look : MonoBehaviourPunCallbacks
 
     void SetY()
     {
-        float t_input = Input.GetAxis("Mouse Y") * ySensitivity * Time.fixedDeltaTime;
+        float t_input = Input.GetAxis("Mouse Y") * ySensitivity * Time.deltaTime;
         Quaternion t_adj = Quaternion.AngleAxis(t_input, -Vector3.right);
         Quaternion t_delta = normalCam.localRotation * t_adj;
 
@@ -62,7 +62,7 @@ public class Look : MonoBehaviourPunCallbacks
 
     void SetX()
     {
-        float t_input = Input.GetAxis("Mouse X") * xSensitivity * Time.fixedDeltaTime;
+        float t_input = Input.GetAxis("Mouse X") * xSensitivity * Time.deltaTime;
         Quaternion t_adj = Quaternion.AngleAxis(t_input, Vector3.up);
         Quaternion t_delta = player.localRotation * t_adj;
         player.localRotation = t_delta;

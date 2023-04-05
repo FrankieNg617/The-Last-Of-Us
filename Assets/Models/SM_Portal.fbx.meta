@@ -1,9 +1,17 @@
 fileFormatVersion: 2
-guid: 7451d03e34bf47640836cd525f4e40f3
+guid: b4d3633e91b0d9242b11792bbd638356
 ModelImporter:
   serializedVersion: 21300
-  internalIDToNameTable: []
-  externalObjects: {}
+  internalIDToNameTable:
+  - first:
+      74: -623603649343465320
+    second: Scene
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Portal
+    second: {fileID: 2100000, guid: 86eae7bf4115ee846887c293276b74c0, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

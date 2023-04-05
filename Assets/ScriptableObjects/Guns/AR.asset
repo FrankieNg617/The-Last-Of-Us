@@ -22,11 +22,15 @@ MonoBehaviour:
   bloom: 20
   recoil: 4
   kickBack: 0.05
-  aimSpeed: 7
+  aimSpeed: 10
   reloadTime: 2
   mainFOV: 0.6
   weaponFOV: 0.2
   gunshotSound: {fileID: 8300000, guid: 3948a8f309f95d642be8c36a6df66936, type: 3}
+  reloadSound: {fileID: 8300000, guid: 0296b28ea8808d749b8d420a93fce5f9, type: 3}
+  emptyFireSound: {fileID: 8300000, guid: 9775cf76181fa3643b8d3234e8deb0f0, type: 3}
+  unholsterSound: {fileID: 8300000, guid: de28991ccaa8ce644a18844530920a58, type: 3}
+  aimingSound: {fileID: 8300000, guid: 9b10d57155f37b64e9c4f28a774289aa, type: 3}
   pitchRandomization: 0.2
   shotVolume: 0.05
   prefab: {fileID: 7084037848292785719, guid: 011f642ae59c1764f921e144f6d02bb5, type: 3}

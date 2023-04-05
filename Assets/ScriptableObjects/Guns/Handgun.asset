@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Handgun
   m_EditorClassIdentifier: 
   GunName: Handgun
-  damage: 100
+  damage: 120
   ammo: 20
   burst: 0
   pellets: 0
@@ -27,6 +27,10 @@ MonoBehaviour:
   mainFOV: 0.8
   weaponFOV: 0.6
   gunshotSound: {fileID: 8300000, guid: fd0504d188555434a83b17e38b15c47b, type: 3}
+  reloadSound: {fileID: 8300000, guid: 81102e3ad0c9def4c94bb30b5df02f2a, type: 3}
+  emptyFireSound: {fileID: 8300000, guid: 9775cf76181fa3643b8d3234e8deb0f0, type: 3}
+  unholsterSound: {fileID: 8300000, guid: de28991ccaa8ce644a18844530920a58, type: 3}
+  aimingSound: {fileID: 8300000, guid: 9b10d57155f37b64e9c4f28a774289aa, type: 3}
   pitchRandomization: 0.025
   shotVolume: 0.1
   prefab: {fileID: 7084037848292785719, guid: 8d98b3da0d47df847a65f4c3833ef221, type: 3}

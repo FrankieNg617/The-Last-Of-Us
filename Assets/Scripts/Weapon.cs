@@ -13,7 +13,12 @@ public class Weapon : MonoBehaviourPunCallbacks
 
     public Transform weaponParent;
     public LayerMask canBeShot;
-    public AudioSource sfx;
+    public AudioSource gunShotsfx;
+    public AudioSource reloadsfx;
+    public AudioSource emptyFiresfx;
+    public AudioSource unholstersfx;
+    public AudioSource aimingsfx;
+
     public AudioClip hitmarkerSound;
     public bool isAiming = false;
 
@@ -66,7 +71,16 @@ public class Weapon : MonoBehaviourPunCallbacks
                 {
                     if (Input.GetMouseButtonDown(0) && !isReloading && !isEquipping && currentCooldown <= 0)
                     {
+                        if (currentGunData.GetClip() <= 0 && currentGunData.GetStash() <= 0) 
+                        {
+                            //empty fire sound
+                            emptyFiresfx.Stop();
+                            emptyFiresfx.clip = currentGunData.emptyFireSound;
+                            emptyFiresfx.Play();
+                        }
+
                         if (loadout[currentIndex].FireBullet()) photonView.RPC("Shoot", RpcTarget.All);
+
                         if (currentGunData.GetClip() <= 0 && currentGunData.GetStash() > 0 && !isReloading) photonView.RPC("ReloadRPC", RpcTarget.All);
                     }
                 }
@@ -74,7 +88,16 @@ public class Weapon : MonoBehaviourPunCallbacks
                 {
                     if (Input.GetMouseButton(0) && !isReloading && !isEquipping && currentCooldown <= 0)
                     {
+                        if (currentGunData.GetClip() <= 0 && currentGunData.GetStash() <= 0) 
+                        {
+                            //empty fire sound
+                            emptyFiresfx.Stop();
+                            emptyFiresfx.clip = currentGunData.emptyFireSound;
+                            emptyFiresfx.Play();
+                        }
+
                         if (loadout[currentIndex].FireBullet()) photonView.RPC("Shoot", RpcTarget.All);
+
                         if (currentGunData.GetClip() <= 0 && currentGunData.GetStash() > 0 && !isReloading) photonView.RPC("ReloadRPC", RpcTarget.All);
                     }
                 }
@@ -128,6 +151,11 @@ public class Weapon : MonoBehaviourPunCallbacks
         else
             currentWeapon.SetActive(false);
 
+        //reload sound
+        reloadsfx.Stop();
+        reloadsfx.clip = currentGunData.reloadSound;
+        reloadsfx.Play();
+
         yield return new WaitForSeconds(p_wait);
 
         if(currentGunData.recovery) loadout[currentIndex].SingleReload();
@@ -167,6 +195,11 @@ public class Weapon : MonoBehaviourPunCallbacks
     IEnumerator EquipAnim()
     {
         isEquipping = true;
+
+        //unhloster sound
+        unholstersfx.Stop();
+        unholstersfx.clip = currentGunData.unholsterSound;
+        unholstersfx.Play();
         
         currentWeapon.GetComponent<Animator>().Play("Equip", 0, 0);
 
@@ -269,7 +302,7 @@ public class Weapon : MonoBehaviourPunCallbacks
                     {
                         photonView.RPC("BulletImpactVFX", RpcTarget.All, t_hit.point, t_hit.normal);
                     }
-                    
+
                     //shooting other player on network
                     if (t_hit.collider.gameObject.layer == 11)
                     {
@@ -295,32 +328,23 @@ public class Weapon : MonoBehaviourPunCallbacks
 
                             //show hitmarker
                             hitmarkerImage.color = Color.white;
-                            sfx.PlayOneShot(hitmarkerSound);
+                            gunShotsfx.PlayOneShot(hitmarkerSound);
                             hitmarkerWait = 1f;
 
                             //shoe blood effect
                             photonView.RPC("BloodVFX", RpcTarget.All, t_hit.point, t_hit.normal);
                         }
                     }
-
-                    //shooting target
-                    if (t_hit.collider.gameObject.layer == 12)
-                    {   
-                        //show hitmarker
-                        hitmarkerImage.color = Color.white;
-                        sfx.PlayOneShot(hitmarkerSound);
-                        hitmarkerWait = 1f;
-                    }
                 }
             }
         }
         
         //sound
-        sfx.Stop();
-        sfx.clip = currentGunData.gunshotSound;
-        sfx.pitch = 1 - currentGunData.pitchRandomization + Random.Range(-currentGunData.pitchRandomization, currentGunData.pitchRandomization);
-        sfx.volume = currentGunData.shotVolume;
-        sfx.Play();
+        gunShotsfx.Stop();
+        gunShotsfx.clip = currentGunData.gunshotSound;
+        gunShotsfx.pitch = 1 - currentGunData.pitchRandomization + Random.Range(-currentGunData.pitchRandomization, currentGunData.pitchRandomization);
+        gunShotsfx.volume = currentGunData.shotVolume;
+        gunShotsfx.Play();
 
         //gun fx
         currentWeapon.transform.Rotate(-loadout[currentIndex].recoil, 0, 0);

@@ -19,14 +19,18 @@ MonoBehaviour:
   pellets: 10
   clipsize: 5
   fireRate: 0.8
-  bloom: 40
+  bloom: 80
   recoil: 15
   kickBack: 0.2
-  aimSpeed: 7
+  aimSpeed: 10
   reloadTime: 1.25
   mainFOV: 0.7
   weaponFOV: 0.2
   gunshotSound: {fileID: 8300000, guid: 258314b806624cd4f806a24f2e7cc265, type: 3}
+  reloadSound: {fileID: 8300000, guid: 30b5a8fa2d6863d42926084fe5601035, type: 3}
+  emptyFireSound: {fileID: 8300000, guid: 9775cf76181fa3643b8d3234e8deb0f0, type: 3}
+  unholsterSound: {fileID: 8300000, guid: de28991ccaa8ce644a18844530920a58, type: 3}
+  aimingSound: {fileID: 8300000, guid: 9b10d57155f37b64e9c4f28a774289aa, type: 3}
   pitchRandomization: 0.2
   shotVolume: 0.15
   prefab: {fileID: 7084037848292785719, guid: c108b54bd81f1a847917335a71db4587, type: 3}

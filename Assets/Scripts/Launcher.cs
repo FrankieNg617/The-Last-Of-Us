@@ -63,9 +63,12 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     private List<RoomInfo> roomList = new List<RoomInfo>();
 
+    private LoadingScreen loadingScreen;
+
 
     public void Awake()
     {
+        loadingScreen = GameObject.Find("Loading Manager").GetComponent<LoadingScreen>();
         PhotonNetwork.AutomaticallySyncScene = true;
 
         myProfile = Data.LoadProfile();
@@ -88,7 +91,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     //will be called after joining a room
     public override void OnJoinedRoom()
     {
-        StartGame();
+        loadingScreen.ShowScreen(maps[currentmap].name, null);
 
         base.OnJoinedRoom();
     }
@@ -240,7 +243,7 @@ public class Launcher : MonoBehaviourPunCallbacks
             else
                 newRoomButton.transform.Find("Map/Name").GetComponent<Text>().text = "-----";
 
-            newRoomButton.GetComponent<Button>().onClick.AddListener(delegate { JoinRoom(newRoomButton.transform); });
+            newRoomButton.GetComponent<Button>().onClick.AddListener(delegate { loadingScreen.ShowScreen(maps[(int)a.CustomProperties["map"]].name, newRoomButton.transform); });
         }
 
         base.OnRoomListUpdate(roomList);

@@ -207,6 +207,15 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         bool isCrouching = crouch && !isSprinting && !isJumping && isGrounded;
 
 
+        //aiming sound
+        if(Input.GetMouseButtonDown(1) && !isSprinting)
+        {
+            weapon.aimingsfx.Stop();
+            weapon.aimingsfx.clip = weapon.currentGunData.aimingSound;
+            weapon.aimingsfx.Play();
+        }
+
+
         //Pause
         if (pause)
         {

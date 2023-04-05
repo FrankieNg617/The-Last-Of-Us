@@ -20,6 +20,10 @@ public class Gun : ScriptableObject
     [Range(0, 1)] public float mainFOV;
     [Range(0, 1)] public float weaponFOV;
     public AudioClip gunshotSound;
+    public AudioClip reloadSound;
+    public AudioClip emptyFireSound;
+    public AudioClip unholsterSound;
+    public AudioClip aimingSound;
     public float pitchRandomization;
     public float shotVolume;
     public GameObject prefab;
