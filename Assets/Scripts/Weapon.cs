@@ -259,9 +259,7 @@ public class Weapon : MonoBehaviourPunCallbacks
             {
                 if (t_hit.collider.gameObject.layer != 11)
                 {
-                    GameObject t_newHole = Instantiate(bulletHolePrefab, t_hit.point + t_hit.normal * 0.001f, Quaternion.identity) as GameObject;
-                    t_newHole.transform.LookAt(t_hit.point + t_hit.normal);
-                    Destroy(t_newHole, 5f);
+                    photonView.RPC("BulletImpactVFX", RpcTarget.All, t_hit.point, t_hit.normal);
                 }
 
                 if (photonView.IsMine)
@@ -295,7 +293,7 @@ public class Weapon : MonoBehaviourPunCallbacks
                             hitmarkerWait = 1f;
 
                             //shoe blood effect
-                            photonView.RPC("BloodVFX", RpcTarget.AllBuffered, t_hit.point + t_hit.normal * 0.001f);
+                            photonView.RPC("BloodVFX", RpcTarget.All, t_hit.point, t_hit.normal);
                         }
                     }
 

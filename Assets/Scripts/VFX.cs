@@ -7,6 +7,9 @@ public class VFX : MonoBehaviour
 {
     public GameObject dieVFX;
     public GameObject bloodVFX;
+    public GameObject dirtVFX;
+    public GameObject concreteVFX;
+    public GameObject bulletHoleVFX;
 
     [PunRPC]
     public void DieVFX()
@@ -16,9 +19,22 @@ public class VFX : MonoBehaviour
     }
 
     [PunRPC]
-    public void BloodVFX(Vector3 bloodPos)
+    public void BloodVFX(Vector3 hitPos, Vector3 hitNormal)
     {
-        GameObject blooding = Instantiate(bloodVFX, bloodPos, Quaternion.identity);
+        GameObject blooding = Instantiate(bloodVFX, hitPos + hitNormal * 0.001f, Quaternion.identity);
+        blooding.transform.LookAt(hitPos + hitNormal);
+    }
+
+    [PunRPC]
+    public void BulletImpactVFX(Vector3 hitPos, Vector3 hitNormal)
+    {
+        GameObject dirt = Instantiate(dirtVFX, hitPos + hitNormal * 0.001f, Quaternion.identity);
+        GameObject concrete = Instantiate(concreteVFX, hitPos + hitNormal * 0.001f, Quaternion.identity);
+        GameObject bulletHole = Instantiate(bulletHoleVFX, hitPos + hitNormal * 0.001f, Quaternion.identity);
+
+        dirt.transform.LookAt(hitPos + hitNormal);
+        concrete.transform.LookAt(hitPos + hitNormal);
+        bulletHole.transform.LookAt(hitPos + hitNormal);
     }
 
 
