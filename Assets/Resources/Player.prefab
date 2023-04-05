@@ -418,7 +418,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 68ff340a3f73cd347b7d5fc67b2b4a9f, type: 2}
   currentGunData: {fileID: 0}
   weaponParent: {fileID: 3154256828454588970}
-  bulletHolePrefab: {fileID: 5031034841414229636, guid: f7c6dc70310deac45a61c6e85d1cf00e, type: 3}
   canBeShot:
     serializedVersion: 2
     m_Bits: 6455
@@ -527,6 +526,7 @@ MonoBehaviour:
   dirtVFX: {fileID: 6830901313338871508, guid: 80b5695e62a66ff4ea63678d2b86b9d0, type: 3}
   concreteVFX: {fileID: 8716106168604566186, guid: 2f7e33b0d4cfb734bb8558926031e82f, type: 3}
   bulletHoleVFX: {fileID: 7830876309332086499, guid: f643e64bd3b1c334d988ade14a2ad078, type: 3}
+  muzzleFlashVFX: {fileID: 4834526503407549940, guid: 6d54124cd32177447935f38b0dfabfca, type: 3}
 --- !u!1 &3154256828454588969
 GameObject:
   m_ObjectHideFlags: 0

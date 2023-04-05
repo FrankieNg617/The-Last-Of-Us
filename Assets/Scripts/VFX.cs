@@ -10,6 +10,7 @@ public class VFX : MonoBehaviour
     public GameObject dirtVFX;
     public GameObject concreteVFX;
     public GameObject bulletHoleVFX;
+    public GameObject muzzleFlashVFX;
 
     [PunRPC]
     public void DieVFX()
@@ -35,6 +36,11 @@ public class VFX : MonoBehaviour
         dirt.transform.LookAt(hitPos + hitNormal);
         concrete.transform.LookAt(hitPos + hitNormal);
         bulletHole.transform.LookAt(hitPos + hitNormal);
+    }
+
+    public void MuzzleFlashVFX(Transform muzzleFlashParent)
+    {
+        GameObject muzzleFlash = Instantiate(muzzleFlashVFX, muzzleFlashParent.position, muzzleFlashParent.rotation, muzzleFlashParent); 
     }
 
 

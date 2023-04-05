@@ -12,7 +12,6 @@ public class Weapon : MonoBehaviourPunCallbacks
     [HideInInspector] public Gun currentGunData;
 
     public Transform weaponParent;
-    public GameObject bulletHolePrefab;
     public LayerMask canBeShot;
     public AudioSource sfx;
     public AudioClip hitmarkerSound;
@@ -28,7 +27,10 @@ public class Weapon : MonoBehaviourPunCallbacks
     private bool isReloading;
     private bool isEquipping;
 
+    private Transform muzzleFlashParent;
+
     private Color CLEARWHITE = new Color(1, 1, 1, 0);
+    private VFX vfx;
 
     #endregion
 
@@ -36,6 +38,7 @@ public class Weapon : MonoBehaviourPunCallbacks
 
     void Start()
     {
+        vfx = GetComponent<VFX>();
         foreach (Gun a in loadout) a.Initialize();
 
         hitmarkerImage = GameObject.Find("HUD/Hitmarker/Image").GetComponent<Image>();
@@ -252,18 +255,21 @@ public class Weapon : MonoBehaviourPunCallbacks
             t_bloom -= t_spawn.position;
             t_bloom.Normalize();
 
-        
+            //muzzle flash
+            muzzleFlashParent = currentWeapon.transform.Find("Root/Anchor/Resources/Muzzle Flash");
+            vfx.MuzzleFlashVFX(muzzleFlashParent);
+
             //raycast
             RaycastHit t_hit = new RaycastHit();
             if (Physics.Raycast(t_spawn.position, t_bloom, out t_hit, 1000f, canBeShot))
             {
-                if (t_hit.collider.gameObject.layer != 11)
-                {
-                    photonView.RPC("BulletImpactVFX", RpcTarget.All, t_hit.point, t_hit.normal);
-                }
-
                 if (photonView.IsMine)
                 {
+                    if (t_hit.collider.gameObject.layer != 11)
+                    {
+                        photonView.RPC("BulletImpactVFX", RpcTarget.All, t_hit.point, t_hit.normal);
+                    }
+                    
                     //shooting other player on network
                     if (t_hit.collider.gameObject.layer == 11)
                     {
