@@ -12,6 +12,6 @@ EditorBuildSettings:
     path: Assets/Scenes/Classic.unity
     guid: dbb0e9bba82c48641907723d7d52a400
   - enabled: 1
-    path: Assets/Scenes/Cyberpunk.unity
-    guid: f5fa58f7b1ad6e0489281efa8a011014
+    path: Assets/Scenes/Desert.unity
+    guid: f24be98f041d0424384f303d03f0a684
   m_configObjects: {}

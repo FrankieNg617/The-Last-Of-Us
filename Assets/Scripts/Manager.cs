@@ -170,9 +170,14 @@ public class Manager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public void Spawn()
     {
+        Transform t_spawn = spawn_points[Random.Range(0, spawn_points.Length)];  //random spawn point;
 
-        Transform t_spawn = spawn_points[Random.Range(0, spawn_points.Length)];  //random spawn point
-
+        if (GameSettings.GameMode == GameMode.TDM && SceneManager.GetActiveScene().name == "Desert")
+        {
+            if (GameSettings.IsAwayTeam) t_spawn = spawn_points[1];
+            else t_spawn = spawn_points[0];
+        }
+    
         if (PhotonNetwork.IsConnected)
         {
             PhotonNetwork.Instantiate(player_prefab_string, t_spawn.position, t_spawn.rotation);

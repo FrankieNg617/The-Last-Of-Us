@@ -1546,7 +1546,7 @@ MonoBehaviour:
   maps:
   - name: Classic
     scene: 1
-  - name: Cyberpunk
+  - name: Desert
     scene: 2
 --- !u!4 &533406418
 Transform:

@@ -71,6 +71,11 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     private float slide_time;
     private Vector3 slide_dir;
 
+    private Vector3 t_direction;
+    private bool isGrounded;
+    private bool isSprinting;
+    private bool isJumping;
+
     private bool isAiming;
     private bool canJet;
 
@@ -201,9 +206,9 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
 
         //States
-        bool isGrounded = Physics.Raycast(groundDetector.position, Vector3.down, 0.15f, ground);
-        bool isJumping = jump && isGrounded;
-        bool isSprinting = sprint && t_vmove > 0 && !isJumping && isGrounded;
+        isGrounded = Physics.Raycast(groundDetector.position, Vector3.down, 0.15f, ground);
+        isJumping = jump && isGrounded;
+        isSprinting = sprint && t_vmove > 0 && !isJumping && isGrounded;
         bool isCrouching = crouch && !isSprinting && !isJumping && isGrounded;
 
 
@@ -342,9 +347,9 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
 
         //States
-        bool isGrounded = Physics.Raycast(groundDetector.position, Vector3.down, 0.1f, ground);
-        bool isJumping = jump && isGrounded;
-        bool isSprinting = sprint && t_vmove > 0 && !isJumping && isGrounded;
+        isGrounded = Physics.Raycast(groundDetector.position, Vector3.down, 0.1f, ground);
+        isJumping = jump && isGrounded;
+        isSprinting = sprint && t_vmove > 0 && !isJumping && isGrounded;
         bool isSliding = isSprinting && slide && !sliding;
         isAiming = aim && !isSliding && !isSprinting;
 
@@ -365,7 +370,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
 
         //Movement
-        Vector3 t_direction = Vector3.zero;
+        t_direction = Vector3.zero;
         float t_adjustedSpeed = speed;
 
         if (!sliding)
@@ -572,6 +577,20 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             }
         }
     }
+
+    #endregion
+
+    #region Getter
+
+    public bool IsGrounded() { return isGrounded; }
+
+    public bool IsSprinting() { return isSprinting; }
+
+    public bool IsSliding() { return sliding; }
+
+    public bool IsJumping() { return isJumping; }
+
+    public  Vector3 IsMoving() { return t_direction; }
 
     #endregion
 }
