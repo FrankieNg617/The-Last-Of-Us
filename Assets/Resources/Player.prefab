@@ -752,10 +752,12 @@ MonoBehaviour:
   weaponCam: {fileID: 1140944544935189873}
   cameraParent: {fileID: 3154256828872899520}
   weaponParent: {fileID: 3154256828454588970}
+  weapons: {fileID: 3154256828454588969}
   groundDetector: {fileID: 3154256828493563066}
   ground:
     serializedVersion: 2
     m_Bits: 256
+  spawnTime: 6
   playerProfile:
     username: DEFAULT USERNAME
     level: 0
@@ -767,6 +769,7 @@ MonoBehaviour:
   standingCollider: {fileID: 3892234248321482715}
   crouchingCollider: {fileID: 7034579138895964802}
   mesh: {fileID: 6788722785089143763}
+  nameTag: {fileID: 4955183763353626957}
   teamIndicators:
   - {fileID: 4443522236908735963}
 --- !u!114 &3154256828308551014

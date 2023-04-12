@@ -1544,7 +1544,7 @@ MonoBehaviour:
   buttonRoom: {fileID: 41906257588582656, guid: 09a719def6358714dbded5d1a81acaee, type: 3}
   gameTitle: {fileID: 1574129641}
   maps:
-  - name: Classic
+  - name: Rainforest
     scene: 1
   - name: Desert
     scene: 2

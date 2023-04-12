@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Menu.unity
     guid: d1526d99b3f93684c8ea540048860a30
   - enabled: 1
-    path: Assets/Scenes/Classic.unity
+    path: Assets/Scenes/Rainforest.unity
     guid: dbb0e9bba82c48641907723d7d52a400
   - enabled: 1
     path: Assets/Scenes/Desert.unity

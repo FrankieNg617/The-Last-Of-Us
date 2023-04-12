@@ -24,8 +24,10 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     public Camera weaponCam;
     public GameObject cameraParent;
     public Transform weaponParent;
+    public GameObject weapons;
     public Transform groundDetector;
     public LayerMask ground;
+    public int spawnTime;
 
     [HideInInspector] public ProfileData playerProfile;
     [HideInInspector] public bool awayTeam;
@@ -36,6 +38,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     public GameObject standingCollider;
     public GameObject crouchingCollider;
     public GameObject mesh;
+    public GameObject nameTag;
 
     public Renderer[] teamIndicators;
 
@@ -46,6 +49,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
     private Text ui_team;
 
     private Rigidbody rig;
+    private Camera dieCam;
 
     private Vector3 targetWeaponBobPosition;
     private Vector3 weaponParentOrigin;
@@ -108,6 +112,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
 
     private void Start()
     {
+        dieCam = GameObject.Find("Manager/Die Camera").GetComponent<Camera>();
         manager = GameObject.Find("Manager").GetComponent<Manager>();
         weapon = GetComponent<Weapon>();
 
@@ -553,6 +558,26 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
+    private IEnumerator WaitForSpawn()
+    {
+        dieCam.transform.position = normalCam.transform.position;
+        dieCam.transform.rotation = normalCam.transform.rotation;
+
+        standingCollider.SetActive(false);
+        crouchingCollider.SetActive(false);
+        mesh.SetActive(false);
+        cameraParent.SetActive(false);
+        weapons.SetActive(false);
+        nameTag.SetActive(false);
+
+        dieCam.GetComponent<Animator>().Play("WaitForSpawn", 0 ,0);
+
+        yield return new WaitForSeconds(spawnTime);
+      
+        PhotonNetwork.Destroy(gameObject);
+        manager.Spawn();
+    }
+
     #endregion
 
     #region Public Methods
@@ -567,10 +592,9 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable
             if (current_health <= 0)
             {
                 photonView.RPC("DieVFX", RpcTarget.AllBuffered);
-                PhotonNetwork.Destroy(gameObject);
-                
-                manager.Spawn();
 
+                StartCoroutine(WaitForSpawn());
+    
                 manager.ChangeStat_S(PhotonNetwork.LocalPlayer.ActorNumber, 1, 1);
 
                 if (p_actor >= 0) manager.ChangeStat_S(p_actor, 0, 1);
